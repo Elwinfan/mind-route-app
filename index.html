@@ -387,15 +387,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- html2canvas：双 CDN，任一加载成功即可 -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script>
-  // 第一个 CDN 没成功就尝试第二个
-  if (typeof html2canvas === 'undefined') {
-    document.write('<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"><\/script>');
-  }
-</script>
-
 <script>
 /* ============== 数据层 ============== */
 const STORAGE_KEY = 'mindRouteData_v1';
