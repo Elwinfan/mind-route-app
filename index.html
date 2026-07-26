@@ -261,13 +261,128 @@
   .preview-canvas {
     background: #FAFAFA;
     border-radius: 8px;
-    padding: 10px;
+    padding: 16px;
     overflow: auto;
     min-height: 380px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    /* 不用 flex 居中，html2canvas 对 inline-block + 自动宽高最稳 */
   }
+  /* 流程图（HTML+CSS 版） */
+  .flowchart {
+    display: inline-block;
+    background: #FAFAFA;
+    padding: 10px;
+    min-width: 100%;
+  }
+  .flow-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+    padding-left: 110px;
+  }
+  .flow-sub {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 20px;
+    padding-left: 110px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    min-height: 60px;
+    flex-wrap: nowrap;
+  }
+  .flow-route-name {
+    width: 100px;
+    flex-shrink: 0;
+    text-align: right;
+    padding-right: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .flow-nodes {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .flow-node-wrap {
+    display: inline-flex;
+    align-items: center;
+  }
+  .flow-node-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 44px;
+    padding: 0 12px 0 6px;
+    border-radius: 8px;
+    border: 1.5px solid #1976D2;
+    background: #E3F2FD;
+    color: #0D47A1;
+    font-size: 13px;
+    font-weight: 500;
+    max-width: 200px;
+    box-sizing: border-box;
+  }
+  .flow-node-box.success { border-color: #43A047; background: #E8F5E9; color: #1B5E20; }
+  .flow-node-box.fail { border-color: #E53935; background: #FFEBEE; color: #B71C1C; }
+  .flow-node-box.hook { border-color: #FF8F00; background: #FFF3E0; color: #E65100; }
+  .flow-num {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #1976D2;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .success .flow-num { background: #43A047; }
+  .fail .flow-num { background: #E53935; }
+  .hook .flow-num { background: #FF8F00; }
+  .flow-node-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 170px;
+  }
+  .flow-hook-tag {
+    position: absolute;
+    top: -10px;
+    left: 8px;
+    background: #FF8F00;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 8px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    display: inline-flex;
+    align-items: center;
+    color: #1976D2;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+  .success + .flow-arrow, .flow-row.success-row .flow-arrow { color: #43A047; }
+  .fail + .flow-arrow, .flow-row.fail-row .flow-arrow { color: #E53935; }
+  .flow-status {
+    margin-left: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .flow-status.success { color: #43A047; }
+  .flow-status.fail { color: #E53935; }
   .preview-empty {
     text-align: center;
     color: #aaa;
@@ -386,6 +501,14 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- html2canvas：双 CDN，任一加载成功即可 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+  if (typeof html2canvas === 'undefined') {
+    document.write('<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"><\/script>');
+  }
+</script>
 
 <script>
 /* ============== 数据层 ============== */
@@ -733,125 +856,48 @@ function renderPreview() {
     box.innerHTML = '<div class="preview-empty">📋 还没有内容<br>在左侧添加路线和步骤，这里会实时生成流程图</div>';
     return;
   }
-  const svg = buildSvg(t);
-  box.innerHTML = svg;
+  box.innerHTML = buildFlowHtml(t);
 }
 
-function buildSvg(topic) {
-  // 布局参数
-  const PAD_L = 110, PAD_R = 30, PAD_T = 90, PAD_B = 30;
-  const ROW_GAP = 32, NODE_H = 44, NODE_GAP = 14, NODE_MIN_W = 90, NODE_MAX_W = 200;
-  const FONT = '14px -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif';
-  const ROUTE_NAME_FONT = 'bold 15px -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif';
-
-  // 预计算每条路线节点宽度
+// 用 HTML+CSS 拼流程图（不再用 SVG，html2canvas 截 div 最稳）
+function buildFlowHtml(topic) {
   const routes = topic.routes.filter(r => r.nodes.some(n => n.text.trim()));
   if (!routes.length) return '';
 
-  // 先用临时canvas测文字宽度
-  const measurer = document.createElement('canvas').getContext('2d');
+  let html = '<div class="flowchart">';
+  html += `<div class="flow-title">${escapeHtml((topic.emoji||'📌')+' '+topic.name)}</div>`;
+  html += `<div class="flow-sub">共 ${routes.length} 条路线 · ${new Date().toLocaleDateString('zh-CN')}</div>`;
 
-  const layoutRows = routes.map(r => {
+  routes.forEach(r => {
     const nodes = r.nodes.filter(n => n.text.trim());
-    const widths = nodes.map(n => {
-      const txt = wrapText(n.text, 14);
-      measurer.font = FONT;
-      let w = 0;
-      txt.split('\n').forEach(l => { w = Math.max(w, measurer.measureText(l).width); });
-      return Math.min(NODE_MAX_W, Math.max(NODE_MIN_W, Math.ceil(w) + 24));
-    });
-    return { route: r, nodes, widths };
-  });
+    const statusCls = r.status === 'success' ? 'success' : r.status === 'fail' ? 'fail' : '';
+    const statusBadge = r.status === 'success' ? '<span class="flow-status success">✅ 成功</span>'
+      : r.status === 'fail' ? '<span class="flow-status fail">❌ 失败</span>' : '';
 
-  const rowH = NODE_H + 12; // 节点高度 + 行间距
-  const totalH = PAD_T + PAD_B + layoutRows.length * rowH + (layoutRows.length - 1) * ROW_GAP;
-  let totalW = PAD_L + PAD_R;
-  layoutRows.forEach(row => {
-    const w = row.widths.reduce((a, b) => a + b, 0) + (row.widths.length - 1) * NODE_GAP;
-    totalW = Math.max(totalW, PAD_L + w + PAD_R);
-  });
-
-  // 颜色
-  const colorOf = (s) => s === 'success' ? { fill:'#E8F5E9', stroke:'#43A047', text:'#1B5E20', num:'#43A047' }
-    : s === 'fail' ? { fill:'#FFEBEE', stroke:'#E53935', text:'#B71C1C', num:'#E53935' }
-    : { fill:'#E3F2FD', stroke:'#1976D2', text:'#0D47A1', num:'#1976D2' };
-
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">`;
-  svg += `<rect width="100%" height="100%" fill="#FAFAFA"/>`;
-  // 标题
-  svg += `<text x="${PAD_L}" y="34" font-family="${ROUTE_NAME_FONT}" font-size="20" font-weight="700" fill="#222">${escapeXml((topic.emoji||'📌')+' '+topic.name)}</text>`;
-  svg += `<text x="${PAD_L}" y="54" font-family="${FONT}" font-size="12" fill="#999">共 ${routes.length} 条路线 · ${new Date().toLocaleDateString('zh-CN')}</text>`;
-
-  layoutRows.forEach((row, ri) => {
-    const y = PAD_T + ri * (rowH + ROW_GAP);
-    const c = colorOf(row.route.status);
-    // 路线名（左侧）
-    const nameLines = wrapText(row.route.name, 8);
-    const nameLinesArr = nameLines.split('\n');
-    const nameY = y + NODE_H/2 - (nameLinesArr.length-1)*9;
-    nameLinesArr.forEach((l, i) => {
-      svg += `<text x="${PAD_L - 14}" y="${nameY + i*18}" font-family="${ROUTE_NAME_FONT}" font-size="13" font-weight="600" fill="${c.num}" text-anchor="end">${escapeXml(l)}</text>`;
-    });
-
+    html += `<div class="flow-row ${statusCls ? statusCls+'-row' : ''}">`;
+    // 路线名
+    const nameDisplay = escapeHtml(r.name).length > 12
+      ? escapeHtml(r.name).slice(0, 12) + '…'
+      : escapeHtml(r.name);
+    html += `<div class="flow-route-name" style="color:${r.status==='success'?'#43A047':r.status==='fail'?'#E53935':'#1976D2'}">${nameDisplay}</div>`;
     // 节点
-    let x = PAD_L;
-    row.nodes.forEach((n, ni) => {
-      const w = row.widths[ni];
+    html += '<div class="flow-nodes">';
+    nodes.forEach((n, ni) => {
       const isHook = ni === 0;
-      const nodeFill = isHook ? '#FFF3E0' : c.fill;
-      const nodeStroke = isHook ? '#FF8F00' : c.stroke;
-      const nodeText = isHook ? '#E65100' : c.text;
-      const nodeNumBg = isHook ? '#FF8F00' : c.num;
-      // 钩子小标签（节点上方）
-      if (isHook) {
-        svg += `<rect x="${x+4}" y="${y-14}" width="46" height="16" rx="8" ry="8" fill="#FF8F00"/>`;
-        svg += `<text x="${x+27}" y="${y-2}" font-family="${FONT}" font-size="11" font-weight="700" fill="white" text-anchor="middle">🪝 钩子</text>`;
-      }
-      // 节点框
-      svg += `<rect x="${x}" y="${y}" width="${w}" height="${NODE_H}" rx="8" ry="8" fill="${nodeFill}" stroke="${nodeStroke}" stroke-width="1.5"/>`;
-      // 序号圆
-      svg += `<circle cx="${x+14}" cy="${y+14}" r="9" fill="${nodeNumBg}"/>`;
-      svg += `<text x="${x+14}" y="${y+18}" font-family="${FONT}" font-size="11" font-weight="700" fill="white" text-anchor="middle">${ni+1}</text>`;
-      // 节点文字
-      const txtLines = wrapText(n.text, Math.floor((w-30)/8)).split('\n').slice(0, 2);
-      const tY = y + NODE_H/2 - (txtLines.length-1)*8 + 4;
-      txtLines.forEach((l, i) => {
-        svg += `<text x="${x+w/2+8}" y="${tY + i*16}" font-family="${FONT}" font-size="13" fill="${nodeText}" text-anchor="middle">${escapeXml(l)}</text>`;
-      });
-      // 箭头
-      if (ni < row.nodes.length - 1) {
-        const ax = x + w;
-        const ay = y + NODE_H/2;
-        svg += `<line x1="${ax+2}" y1="${ay}" x2="${ax+NODE_GAP-4}" y2="${ay}" stroke="${c.num}" stroke-width="1.8"/>`;
-        svg += `<polygon points="${ax+NODE_GAP-4},${ay-4} ${ax+NODE_GAP},${ay} ${ax+NODE_GAP-4},${ay+4}" fill="${c.num}"/>`;
-      }
-      x += w + NODE_GAP;
+      const cls = (statusCls || '') + (isHook ? ' hook' : '');
+      const hookTag = isHook ? '<span class="flow-hook-tag">🪝 钩子</span>' : '';
+      html += `<span class="flow-node-wrap">`;
+      html += `<span class="flow-node-box ${cls}">${hookTag}<span class="flow-num">${ni+1}</span><span class="flow-node-text">${escapeHtml(n.text)}</span></span>`;
+      if (ni < nodes.length - 1) html += `<span class="flow-arrow">→</span>`;
+      html += `</span>`;
     });
-
-    // 状态标签（结尾后）
-    if (row.route.status === 'success') {
-      svg += `<text x="${x+4}" y="${y+NODE_H/2+5}" font-family="${FONT}" font-size="14" font-weight="700" fill="#43A047">✅ 成功</text>`;
-    } else if (row.route.status === 'fail') {
-      svg += `<text x="${x+4}" y="${y+NODE_H/2+5}" font-family="${FONT}" font-size="14" font-weight="700" fill="#E53935">❌ 失败</text>`;
-    }
+    html += '</div>';
+    html += statusBadge;
+    html += '</div>';
   });
 
-  svg += `</svg>`;
-  return svg;
-}
-
-// 简易换行：按预估每行字符数
-function wrapText(text, perLine) {
-  text = (text || '').trim();
-  if (!text) return '';
-  if (text.length <= perLine) return text;
-  // 按字符粗暴切，每行 perLine 字
-  const lines = [];
-  for (let i = 0; i < text.length; i += perLine) {
-    lines.push(text.slice(i, i + perLine));
-    if (lines.length === 2) break;
-  }
-  return lines.join('\n');
+  html += '</div>';
+  return html;
 }
 
 /* ============== 导出 PNG ============== */
@@ -863,65 +909,36 @@ function exportPng() {
 
   toast('生成中…');
 
-  // 拿到 SVG 字符串（已渲染在预览区），转 base64 data URL
-  const svgEl = document.querySelector('#previewCanvas svg');
-  if (!svgEl) { toast('预览图为空'); return; }
+  // 检查 html2canvas 是否加载
+  if (typeof html2canvas === 'undefined') {
+    toast('导出库未加载，刷新或检查网络');
+    return;
+  }
 
-  // 克隆并清理（去掉可能的 script/hover）
-  const clone = svgEl.cloneNode(true);
-  // 确保根有命名空间
-  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+  // 截取 flowchart 元素（更精确，避免外层 padding/scrollbar 干扰）
+  const target = document.querySelector('#previewCanvas .flowchart');
+  if (!target) { toast('预览图为空'); return; }
 
-  const svgStr = new XMLSerializer().serializeToString(clone);
-  // base64 编码（避开 blob URL 污染 + 中文乱码）
-  const b64 = btoa(unescape(encodeURIComponent(svgStr)));
-  const dataUrl = 'data:image/svg+xml;base64,' + b64;
-
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-
-  img.onload = () => {
-    try {
-      const scale = 2;
-      const canvas = document.createElement('canvas');
-      canvas.width = (img.naturalWidth || img.width) * scale;
-      canvas.height = (img.naturalHeight || img.height) * scale;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#FAFAFA';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      ctx.drawImage(img, 0, 0);
-
-      // 检测 canvas 是否被污染
-      let tainted = false;
-      try { ctx.getImageData(0, 0, 1, 1); } catch (e) { tainted = true; }
-
-      if (tainted) {
-        toast('浏览器拦截，改用 SVG 文件');
-        downloadSvgFile(t, svgStr);
-        return;
-      }
-
-      canvas.toBlob((b) => {
-        if (!b) { toast('PNG 失败，改用 SVG'); downloadSvgFile(t, svgStr); return; }
-        triggerDownload(b, t.name, 'png');
-        toast('已导出 PNG ✓');
-      }, 'image/png');
-    } catch (e) {
-      console.error('canvas err', e);
-      toast('PNG 失败，改用 SVG');
-      downloadSvgFile(t, svgStr);
-    }
-  };
-
-  img.onerror = (e) => {
-    console.error('img load err', e);
-    toast('PNG 失败，改用 SVG');
-    downloadSvgFile(t, svgStr);
-  };
-
-  img.src = dataUrl;
+  html2canvas(target, {
+    backgroundColor: '#FAFAFA',
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    // 关键：让 html2canvas 用元素自身尺寸，不受外层 scroll/transform 影响
+    width: target.offsetWidth,
+    height: target.offsetHeight,
+    windowWidth: document.documentElement.offsetWidth,
+    windowHeight: document.documentElement.offsetHeight
+  }).then(canvas => {
+    canvas.toBlob((b) => {
+      if (!b) { toast('PNG 失败：toBlob 返回空'); return; }
+      triggerDownload(b, t.name, 'png');
+      toast('已导出 PNG ✓');
+    }, 'image/png');
+  }).catch(err => {
+    console.error('html2canvas fail', err);
+    toast('导出失败：' + (err.message || err));
+  });
 }
 
 function triggerDownload(blob, name, ext) {
@@ -936,13 +953,6 @@ function triggerDownload(blob, name, ext) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
-
-function downloadSvgFile(t, svgStr) {
-  const fullSvg = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgStr;
-  const blob = new Blob([fullSvg], { type: 'image/svg+xml;charset=utf-8' });
-  triggerDownload(blob, t.name, 'svg');
-  setTimeout(() => toast('已下载 SVG 文件，双击即可查看'), 100);
 }
 
 /* ============== 工具 ============== */
