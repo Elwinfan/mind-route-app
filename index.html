@@ -870,44 +870,88 @@ function exportPng() {
   const routesHasContent = t.routes.some(r => r.nodes.some(n => n.text.trim()));
   if (!routesHasContent) { toast('路线没有内容，无法导出'); return; }
 
-  if (typeof html2canvas === 'undefined') {
-    toast('导出库未加载，请检查网络后刷新');
-    return;
-  }
-
-  // 在预览区生成一个临时的高清导出容器（避免受 preview-canvas 滚动/居中影响）
-  const target = document.getElementById('previewCanvas');
   toast('生成中…');
 
-  html2canvas(target, {
-    backgroundColor: '#FAFAFA',
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    scrollX: 0,
-    scrollY: -window.scrollY,
-    windowWidth: target.scrollWidth,
-    windowHeight: target.scrollHeight
-  }).then(canvas => {
-    canvas.toBlob((b) => {
-      if (!b) { toast('导出失败：toBlob 返回空'); return; }
-      const dlUrl = URL.createObjectURL(b);
-      const a = document.createElement('a');
-      const now = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-      a.href = dlUrl;
-      a.download = `${t.name}-思维路径-${stamp}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(dlUrl), 2000);
-      toast('已导出 PNG ✓');
-    }, 'image/png');
-  }).catch(err => {
-    console.error('html2canvas fail', err);
-    toast('导出失败：' + (err.message || err));
-  });
+  // 拿到 SVG 字符串（已渲染在预览区），转 base64 data URL
+  const svgEl = document.querySelector('#previewCanvas svg');
+  if (!svgEl) { toast('预览图为空'); return; }
+
+  // 克隆并清理（去掉可能的 script/hover）
+  const clone = svgEl.cloneNode(true);
+  // 确保根有命名空间
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  // base64 编码（避开 blob URL 污染 + 中文乱码）
+  const b64 = btoa(unescape(encodeURIComponent(svgStr)));
+  const dataUrl = 'data:image/svg+xml;base64,' + b64;
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+    try {
+      const scale = 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = (img.naturalWidth || img.width) * scale;
+      canvas.height = (img.naturalHeight || img.height) * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#FAFAFA';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+
+      // 检测 canvas 是否被污染
+      let tainted = false;
+      try { ctx.getImageData(0, 0, 1, 1); } catch (e) { tainted = true; }
+
+      if (tainted) {
+        toast('浏览器拦截，改用 SVG 文件');
+        downloadSvgFile(t, svgStr);
+        return;
+      }
+
+      canvas.toBlob((b) => {
+        if (!b) { toast('PNG 失败，改用 SVG'); downloadSvgFile(t, svgStr); return; }
+        triggerDownload(b, t.name, 'png');
+        toast('已导出 PNG ✓');
+      }, 'image/png');
+    } catch (e) {
+      console.error('canvas err', e);
+      toast('PNG 失败，改用 SVG');
+      downloadSvgFile(t, svgStr);
+    }
+  };
+
+  img.onerror = (e) => {
+    console.error('img load err', e);
+    toast('PNG 失败，改用 SVG');
+    downloadSvgFile(t, svgStr);
+  };
+
+  img.src = dataUrl;
+}
+
+function triggerDownload(blob, name, ext) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+  a.href = url;
+  a.download = `${name}-思维路径-${stamp}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function downloadSvgFile(t, svgStr) {
+  const fullSvg = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgStr;
+  const blob = new Blob([fullSvg], { type: 'image/svg+xml;charset=utf-8' });
+  triggerDownload(blob, t.name, 'svg');
+  setTimeout(() => toast('已下载 SVG 文件，双击即可查看'), 100);
 }
 
 /* ============== 工具 ============== */
