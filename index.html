@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思维路径记录器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", sans-serif;
+    background: #F5F5F5;
+    color: #333;
+    min-height: 100vh;
+    padding: 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1500px; margin: 0 auto; }
+
+  /* 顶栏 */
+  header {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  header h1 { font-size: 1.2rem; font-weight: 600; color: #222; }
+  header .sub { font-size: 0.8rem; color: #888; margin-top: 2px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    font-family: inherit;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: #1976D2; color: white; }
+  .btn-primary:hover { background: #1565C0; }
+  .btn-ghost { background: white; border: 1px solid #ddd; color: #555; }
+  .btn-ghost:hover { background: #f5f5f5; }
+  .btn-danger { background: white; border: 1px solid #e57373; color: #c62828; }
+  .btn-danger:hover { background: #ffebee; }
+  .btn-sm { padding: 4px 10px; font-size: 0.78rem; }
+  .btn-icon {
+    width: 28px; height: 28px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; border: 1px solid #ddd; background: white;
+    cursor: pointer; font-size: 0.85rem; color: #666;
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { background: #f0f0f0; color: #333; }
+  .btn-icon.danger:hover { background: #ffebee; color: #c62828; border-color: #e57373; }
+
+  /* Tab */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow-x: auto;
+    align-items: center;
+  }
+  .tab {
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #666;
+    transition: all 0.15s;
+    user-select: none;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .tab:hover { background: #f5f5f5; }
+  .tab.active { background: #1976D2; color: white; font-weight: 500; }
+  .tab .tab-del {
+    display: none;
+    margin-left: 4px;
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    align-items: center; justify-content: center;
+    font-size: 0.75rem;
+  }
+  .tab:hover .tab-del { display: inline-flex; }
+  .tab .tab-del:hover { background: rgba(255,255,255,0.3); }
+  .tab-add {
+    color: #1976D2;
+    border: 1px dashed #bbb;
+    padding: 9px 14px;
+  }
+  .tab-add:hover { background: #f0f7ff; border-color: #1976D2; }
+
+  /* 主体两栏 */
+  .main {
+    display: grid;
+    grid-template-columns: 460px 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .panel-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* 路线卡片 */
+  .route {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .route.success { border-left: 4px solid #43A047; }
+  .route.fail { border-left: 4px solid #E53935; }
+  .route.testing { border-left: 4px solid #1976D2; }
+  .route-head {
+    padding: 10px 12px;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .route-name {
+    flex: 1;
+    min-width: 140px;
+    font-family: inherit;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+  }
+  .route-name:hover { background: white; border-color: #ddd; }
+  .route-name:focus { outline: none; background: white; border-color: #1976D2; }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+  }
+  .status-pill.testing { background: #E3F2FD; color: #1565C0; border-color: #90CAF9; }
+  .status-pill.success { background: #E8F5E9; color: #2E7D32; border-color: #A5D6A7; }
+  .status-pill.fail { background: #FFEBEE; color: #C62828; border-color: #EF9A9A; }
+  .route-body { padding: 10px 12px; }
+  .node {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .node-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #1976D2;
+    color: white;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .route.success .node-num { background: #43A047; }
+  .route.fail .node-num { background: #E53935; }
+  .node-input {
+    flex: 1;
+    font-family: inherit;
+    border: 1px solid #ddd;
+    background: white;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #333;
+  }
+  .node-input:focus { outline: none; border-color: #1976D2; }
+  .node-ops { display: flex; gap: 3px; }
+  .add-node-btn {
+    margin-top: 4px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    color: #1976D2;
+    background: #E3F2FD;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-node-btn:hover { background: #BBDEFB; }
+
+  /* 钩子标记 */
+  .hook-tag {
+    display: inline-block;
+    background: #FF8F00;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .node.is-hook .node-num { background: #FF8F00 !important; }
+  .node.is-hook .node-input { border-color: #FFB74D; background: #FFF8E1; }
+
+  .add-route-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px dashed #bbb;
+    background: transparent;
+    border-radius: 10px;
+    color: #1976D2;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .add-route-btn:hover { background: #f0f7ff; border-color: #1976D2; }
+
+  /* 预览区 */
+  .preview {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    min-height: 400px;
+    overflow: auto;
+  }
+  .preview-canvas {
+    background: #FAFAFA;
+    border-radius: 8px;
+    padding: 10px;
+    overflow: auto;
+    min-height: 380px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .preview-empty {
+    text-align: center;
+    color: #aaa;
+    padding: 80px 20px;
+    font-size: 0.9rem;
+  }
+  .preview-tip {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: #999;
+    text-align: center;
+  }
+
+  /* 弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-size: 1rem; margin-bottom: 12px; }
+  .modal p { font-size: 0.88rem; color: #555; margin-bottom: 16px; }
+  .modal-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+  .modal-input:focus { outline: none; border-color: #1976D2; }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(33,33,33,0.92);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>🧠 思维路径记录器</h1>
+      <div class="sub">把想法拆成多条路线，一键导出流程图 PNG</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="exportPng()">📷 导出图片</button>
+      <button class="btn btn-danger btn-sm" onclick="askClearAll()">🗑 清空全部</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="topicTabs"></div>
+
+  <div class="main">
+    <!-- 左：编辑区 -->
+    <div class="panel">
+      <div class="panel-title">
+        <span id="curTopicName">路线编辑</span>
+        <span style="font-weight:400;font-size:0.78rem;color:#999;">自动保存 ✓</span>
+      </div>
+      <div id="routeList"></div>
+      <button class="add-route-btn" onclick="addRoute()">+ 添加路线</button>
+    </div>
+
+    <!-- 右：预览 -->
+    <div class="preview">
+      <div class="panel-title">
+        <span>流程图预览</span>
+        <span style="font-weight:400;font-size:0.78rem;color:#999;">实时渲染</span>
+      </div>
+      <div class="preview-canvas" id="previewCanvas"></div>
+      <div class="preview-tip">提示：编辑左侧后这里自动刷新 · 点右上「导出图片」下载 PNG</div>
+    </div>
+  </div>
+</div>
+
+<!-- 通用弹窗 -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <h3 id="modalTitle">提示</h3>
+    <p id="modalBody"></p>
+    <input type="text" class="modal-input" id="modalInput" style="display:none;">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal(false)">取消</button>
+      <button class="btn btn-primary" id="modalOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- html2canvas：双 CDN，任一加载成功即可 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+  // 第一个 CDN 没成功就尝试第二个
+  if (typeof html2canvas === 'undefined') {
+    document.write('<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"><\/script>');
+  }
+</script>
+
+<script>
+/* ============== 数据层 ============== */
+const STORAGE_KEY = 'mindRouteData_v1';
+let state = { topics: [], activeTopicId: null };
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      state = JSON.parse(raw);
+      if (!state.topics || !state.topics.length) seedExample();
+    } else {
+      seedExample();
+    }
+  } catch (e) {
+    console.error('load fail', e);
+    seedExample();
+  }
+  if (!state.activeTopicId && state.topics.length) state.activeTopicId = state.topics[0].id;
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { console.error('save fail', e); toast('保存失败：' + e.message); }
+}
+
+function seedExample() {
+  const tId = uid();
+  state = {
+    activeTopicId: tId,
+    topics: [{
+      id: tId,
+      name: '招生',
+      emoji: '🎯',
+      routes: [
+        {
+          id: uid(), name: '路线1 · 抖音9.9引流', status: 'testing',
+          nodes: [
+            { id: uid(), text: '钩子：抖音9.9元体验课引流' },
+            { id: uid(), text: '线下核销上课' },
+            { id: uid(), text: '体验课转化成交' },
+            { id: uid(), text: '成功 / 失败 → 换下一条路线' }
+          ]
+        },
+        {
+          id: uid(), name: '路线2 · 免费邀约体验', status: 'testing',
+          nodes: [
+            { id: uid(), text: '免费邀约体验课' },
+            { id: uid(), text: '使用服务流程' },
+            { id: uid(), text: '线下体验课' },
+            { id: uid(), text: '谈单转化' }
+          ]
+        },
+        {
+          id: uid(), name: '路线3', status: 'testing',
+          nodes: [{ id: uid(), text: '点击编辑第一步' }]
+        },
+        {
+          id: uid(), name: '路线4', status: 'testing',
+          nodes: [{ id: uid(), text: '点击编辑第一步' }]
+        }
+      ]
+    }]
+  };
+  save();
+}
+
+function curTopic() {
+  return state.topics.find(t => t.id === state.activeTopicId);
+}
+
+/* ============== 渲染：主题Tab ============== */
+function renderTabs() {
+  const wrap = document.getElementById('topicTabs');
+  wrap.innerHTML = '';
+  state.topics.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (t.id === state.activeTopicId ? ' active' : '');
+    el.innerHTML = `<span>${escapeHtml((t.emoji||'📌') + ' ' + t.name)}</span>
+      <span class="tab-del" title="删除主题">×</span>`;
+    el.onclick = (e) => {
+      if (e.target.classList.contains('tab-del')) {
+        e.stopPropagation();
+        askDeleteTopic(t.id);
+      } else {
+        state.activeTopicId = t.id; save(); renderAll();
+      }
+    };
+    el.ondblclick = () => askRenameTopic(t.id);
+    wrap.appendChild(el);
+  });
+  const add = document.createElement('div');
+  add.className = 'tab tab-add';
+  add.innerHTML = '+ 新建主题';
+  add.onclick = askAddTopic;
+  wrap.appendChild(add);
+}
+
+/* ============== 渲染：路线编辑 ============== */
+function renderRoutes() {
+  const t = curTopic();
+  const nameEl = document.getElementById('curTopicName');
+  const listEl = document.getElementById('routeList');
+  if (!t) {
+    nameEl.textContent = '请选择主题';
+    listEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:40px 0;">还没有主题，点上方"+ 新建主题"</div>';
+    return;
+  }
+  nameEl.textContent = (t.emoji||'📌') + ' ' + t.name;
+
+  if (!t.routes.length) {
+    listEl.innerHTML = '<div style="color:#aaa;text-align:center;padding:40px 0;">还没有路线<br>点下方"+ 添加路线"开始</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  t.routes.forEach((r, ri) => {
+    const card = document.createElement('div');
+    card.className = 'route ' + (r.status || 'testing');
+
+    // 头部
+    const head = document.createElement('div');
+    head.className = 'route-head';
+    head.innerHTML = `
+      <input class="route-name" value="${escapeAttr(r.name)}" placeholder="路线名称">
+      <span class="status-pill ${r.status||'testing'}" title="点击切换状态">${statusLabel(r.status)}</span>
+    `;
+    head.querySelector('.route-name').oninput = (e) => { r.name = e.target.value; schedulePreview(); save(); };
+    head.querySelector('.status-pill').onclick = () => cycleStatus(r);
+
+    // 操作按钮组
+    const ops = document.createElement('div');
+    ops.style.cssText = 'display:flex;gap:3px;';
+    ops.innerHTML = `
+      <button class="btn-icon" title="上移" ${ri===0?'disabled style="opacity:0.3"':''}>↑</button>
+      <button class="btn-icon" title="下移" ${ri===t.routes.length-1?'disabled style="opacity:0.3"':''}>↓</button>
+      <button class="btn-icon danger" title="删除路线">×</button>
+    `;
+    const [upBtn, downBtn, delBtn] = ops.querySelectorAll('button');
+    if (ri > 0) upBtn.onclick = () => moveRoute(ri, -1);
+    if (ri < t.routes.length - 1) downBtn.onclick = () => moveRoute(ri, 1);
+    delBtn.onclick = () => askDeleteRoute(r.id);
+    head.appendChild(ops);
+    card.appendChild(head);
+
+    // 节点
+    const body = document.createElement('div');
+    body.className = 'route-body';
+    r.nodes.forEach((n, ni) => {
+      const row = document.createElement('div');
+      row.className = 'node' + (ni === 0 ? ' is-hook' : '');
+      const hookTag = ni === 0 ? '<span class="hook-tag">🪝 钩子</span>' : '';
+      row.innerHTML = `
+        <span class="node-num">${ni+1}</span>
+        ${hookTag}
+        <input class="node-input" value="${escapeAttr(n.text)}" placeholder="步骤内容">
+        <div class="node-ops">
+          <button class="btn-icon" title="上移" ${ni===0?'disabled style="opacity:0.3"':''}>↑</button>
+          <button class="btn-icon" title="下移" ${ni===r.nodes.length-1?'disabled style="opacity:0.3"':''}>↓</button>
+          <button class="btn-icon danger" title="删除">×</button>
+        </div>
+      `;
+      const input = row.querySelector('.node-input');
+      input.oninput = (e) => { n.text = e.target.value; schedulePreview(); save(); };
+      input.onkeydown = (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addNode(r, ni + 1); }
+      };
+      const [nuBtn, ndBtn, ndelBtn] = row.querySelectorAll('.node-ops button');
+      if (ni > 0) nuBtn.onclick = () => moveNode(r, ni, -1);
+      if (ni < r.nodes.length - 1) ndBtn.onclick = () => moveNode(r, ni, 1);
+      ndelBtn.onclick = () => deleteNode(r, ni);
+      body.appendChild(row);
+    });
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-node-btn';
+    addBtn.textContent = '+ 添加步骤';
+    addBtn.onclick = () => addNode(r, r.nodes.length);
+    body.appendChild(addBtn);
+
+    card.appendChild(body);
+    listEl.appendChild(card);
+  });
+}
+
+function statusLabel(s) {
+  return s === 'success' ? '✅ 成功' : s === 'fail' ? '❌ 失败' : '🔵 测试中';
+}
+function cycleStatus(r) {
+  const order = ['testing', 'success', 'fail'];
+  r.status = order[(order.indexOf(r.status || 'testing') + 1) % 3];
+  save(); renderRoutes(); renderPreview();
+}
+
+/* ============== 操作 ============== */
+function addRoute() {
+  const t = curTopic(); if (!t) return;
+  const n = t.routes.length + 1;
+  t.routes.push({ id: uid(), name: '路线' + n, status: 'testing', nodes: [{ id: uid(), text: '' }] });
+  save(); renderRoutes(); renderPreview();
+}
+function moveRoute(idx, dir) {
+  const t = curTopic(); const j = idx + dir;
+  if (j < 0 || j >= t.routes.length) return;
+  [t.routes[idx], t.routes[j]] = [t.routes[j], t.routes[idx]];
+  save(); renderRoutes(); renderPreview();
+}
+function askDeleteRoute(id) {
+  const t = curTopic();
+  const r = t.routes.find(x => x.id === id);
+  openModal('删除路线', `确认删除"${r.name}"？该路线所有步骤会一起删除。`, () => {
+    t.routes = t.routes.filter(x => x.id !== id);
+    save(); renderRoutes(); renderPreview(); toast('已删除');
+  });
+}
+
+function addNode(r, at) {
+  r.nodes.splice(at, 0, { id: uid(), text: '' });
+  save(); renderRoutes(); renderPreview();
+  // 聚焦新节点
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.route');
+    // 简化：不精确定位，用户继续编辑
+  }, 0);
+}
+function moveNode(r, idx, dir) {
+  const j = idx + dir;
+  if (j < 0 || j >= r.nodes.length) return;
+  [r.nodes[idx], r.nodes[j]] = [r.nodes[j], r.nodes[idx]];
+  save(); renderRoutes(); renderPreview();
+}
+function deleteNode(r, idx) {
+  if (r.nodes.length <= 1) { toast('至少保留一个步骤'); return; }
+  r.nodes.splice(idx, 1);
+  save(); renderRoutes(); renderPreview();
+}
+
+/* ============== 主题操作 ============== */
+function askAddTopic() {
+  openModalInput('新建主题', '给新主题起个名字：', '', (val) => {
+    if (!val.trim()) return;
+    const t = { id: uid(), name: val.trim(), emoji: pickEmoji(val), routes: [] };
+    state.topics.push(t);
+    state.activeTopicId = t.id;
+    save(); renderAll(); toast('已新建主题');
+  });
+}
+function askRenameTopic(id) {
+  const t = state.topics.find(x => x.id === id);
+  openModalInput('重命名主题', '修改主题名：', t.name, (val) => {
+    if (!val.trim()) return;
+    t.name = val.trim();
+    save(); renderAll();
+  });
+}
+function askDeleteTopic(id) {
+  const t = state.topics.find(x => x.id === id);
+  openModal('删除主题', `确认删除主题"${t.name}"？所有路线都会丢失。`, () => {
+    state.topics = state.topics.filter(x => x.id !== id);
+    if (state.activeTopicId === id) state.activeTopicId = state.topics[0]?.id || null;
+    if (!state.topics.length) {
+      // 自动补一个空主题避免界面卡死
+      const nt = { id: uid(), name: '新主题', emoji: '📌', routes: [] };
+      state.topics.push(nt); state.activeTopicId = nt.id;
+    }
+    save(); renderAll(); toast('已删除主题');
+  });
+}
+function askClearAll() {
+  openModal('清空全部', '确认清空所有主题和路线？此操作不可恢复！', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    seedExample(); renderAll(); toast('已重置为示例');
+  });
+}
+function pickEmoji(name) {
+  const map = { '招生':'🎯', '健身':'💪', '读书':'📚', '课程':'🎓', '运营':'📈', '产品':'📦' };
+  for (const k in map) if (name.includes(k)) return map[k];
+  return '📌';
+}
+
+/* ============== 弹窗 ============== */
+let modalCallback = null;
+function openModal(title, body, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').textContent = body;
+  document.getElementById('modalInput').style.display = 'none';
+  document.getElementById('modalOk').textContent = '确定';
+  modalCallback = cb;
+  document.getElementById('modalMask').classList.add('show');
+}
+function openModalInput(title, body, defVal, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').textContent = body;
+  const inp = document.getElementById('modalInput');
+  inp.style.display = 'block';
+  inp.value = defVal;
+  document.getElementById('modalOk').textContent = '确定';
+  modalCallback = cb;
+  document.getElementById('modalMask').classList.add('show');
+  setTimeout(() => inp.focus(), 50);
+}
+function closeModal(ok) {
+  document.getElementById('modalMask').classList.remove('show');
+  if (ok && modalCallback) {
+    const inp = document.getElementById('modalInput');
+    if (inp.style.display !== 'none') {
+      modalCallback(inp.value);
+    } else {
+      modalCallback();
+    }
+  }
+  modalCallback = null;
+}
+document.getElementById('modalOk').onclick = () => closeModal(true);
+document.getElementById('modalMask').onclick = (e) => {
+  if (e.target.id === 'modalMask') closeModal(false);
+};
+document.getElementById('modalInput').onkeydown = (e) => {
+  if (e.key === 'Enter') closeModal(true);
+};
+
+/* ============== toast ============== */
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+/* ============== 流程图 SVG 渲染 ============== */
+let previewTimer = null;
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(renderPreview, 200);
+}
+
+function renderPreview() {
+  const t = curTopic();
+  const box = document.getElementById('previewCanvas');
+  if (!t || !t.routes.length || t.routes.every(r => !r.nodes.filter(n => n.text.trim()).length)) {
+    box.innerHTML = '<div class="preview-empty">📋 还没有内容<br>在左侧添加路线和步骤，这里会实时生成流程图</div>';
+    return;
+  }
+  const svg = buildSvg(t);
+  box.innerHTML = svg;
+}
+
+function buildSvg(topic) {
+  // 布局参数
+  const PAD_L = 110, PAD_R = 30, PAD_T = 90, PAD_B = 30;
+  const ROW_GAP = 32, NODE_H = 44, NODE_GAP = 14, NODE_MIN_W = 90, NODE_MAX_W = 200;
+  const FONT = '14px -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif';
+  const ROUTE_NAME_FONT = 'bold 15px -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif';
+
+  // 预计算每条路线节点宽度
+  const routes = topic.routes.filter(r => r.nodes.some(n => n.text.trim()));
+  if (!routes.length) return '';
+
+  // 先用临时canvas测文字宽度
+  const measurer = document.createElement('canvas').getContext('2d');
+
+  const layoutRows = routes.map(r => {
+    const nodes = r.nodes.filter(n => n.text.trim());
+    const widths = nodes.map(n => {
+      const txt = wrapText(n.text, 14);
+      measurer.font = FONT;
+      let w = 0;
+      txt.split('\n').forEach(l => { w = Math.max(w, measurer.measureText(l).width); });
+      return Math.min(NODE_MAX_W, Math.max(NODE_MIN_W, Math.ceil(w) + 24));
+    });
+    return { route: r, nodes, widths };
+  });
+
+  const rowH = NODE_H + 12; // 节点高度 + 行间距
+  const totalH = PAD_T + PAD_B + layoutRows.length * rowH + (layoutRows.length - 1) * ROW_GAP;
+  let totalW = PAD_L + PAD_R;
+  layoutRows.forEach(row => {
+    const w = row.widths.reduce((a, b) => a + b, 0) + (row.widths.length - 1) * NODE_GAP;
+    totalW = Math.max(totalW, PAD_L + w + PAD_R);
+  });
+
+  // 颜色
+  const colorOf = (s) => s === 'success' ? { fill:'#E8F5E9', stroke:'#43A047', text:'#1B5E20', num:'#43A047' }
+    : s === 'fail' ? { fill:'#FFEBEE', stroke:'#E53935', text:'#B71C1C', num:'#E53935' }
+    : { fill:'#E3F2FD', stroke:'#1976D2', text:'#0D47A1', num:'#1976D2' };
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">`;
+  svg += `<rect width="100%" height="100%" fill="#FAFAFA"/>`;
+  // 标题
+  svg += `<text x="${PAD_L}" y="34" font-family="${ROUTE_NAME_FONT}" font-size="20" font-weight="700" fill="#222">${escapeXml((topic.emoji||'📌')+' '+topic.name)}</text>`;
+  svg += `<text x="${PAD_L}" y="54" font-family="${FONT}" font-size="12" fill="#999">共 ${routes.length} 条路线 · ${new Date().toLocaleDateString('zh-CN')}</text>`;
+
+  layoutRows.forEach((row, ri) => {
+    const y = PAD_T + ri * (rowH + ROW_GAP);
+    const c = colorOf(row.route.status);
+    // 路线名（左侧）
+    const nameLines = wrapText(row.route.name, 8);
+    const nameLinesArr = nameLines.split('\n');
+    const nameY = y + NODE_H/2 - (nameLinesArr.length-1)*9;
+    nameLinesArr.forEach((l, i) => {
+      svg += `<text x="${PAD_L - 14}" y="${nameY + i*18}" font-family="${ROUTE_NAME_FONT}" font-size="13" font-weight="600" fill="${c.num}" text-anchor="end">${escapeXml(l)}</text>`;
+    });
+
+    // 节点
+    let x = PAD_L;
+    row.nodes.forEach((n, ni) => {
+      const w = row.widths[ni];
+      const isHook = ni === 0;
+      const nodeFill = isHook ? '#FFF3E0' : c.fill;
+      const nodeStroke = isHook ? '#FF8F00' : c.stroke;
+      const nodeText = isHook ? '#E65100' : c.text;
+      const nodeNumBg = isHook ? '#FF8F00' : c.num;
+      // 钩子小标签（节点上方）
+      if (isHook) {
+        svg += `<rect x="${x+4}" y="${y-14}" width="46" height="16" rx="8" ry="8" fill="#FF8F00"/>`;
+        svg += `<text x="${x+27}" y="${y-2}" font-family="${FONT}" font-size="11" font-weight="700" fill="white" text-anchor="middle">🪝 钩子</text>`;
+      }
+      // 节点框
+      svg += `<rect x="${x}" y="${y}" width="${w}" height="${NODE_H}" rx="8" ry="8" fill="${nodeFill}" stroke="${nodeStroke}" stroke-width="1.5"/>`;
+      // 序号圆
+      svg += `<circle cx="${x+14}" cy="${y+14}" r="9" fill="${nodeNumBg}"/>`;
+      svg += `<text x="${x+14}" y="${y+18}" font-family="${FONT}" font-size="11" font-weight="700" fill="white" text-anchor="middle">${ni+1}</text>`;
+      // 节点文字
+      const txtLines = wrapText(n.text, Math.floor((w-30)/8)).split('\n').slice(0, 2);
+      const tY = y + NODE_H/2 - (txtLines.length-1)*8 + 4;
+      txtLines.forEach((l, i) => {
+        svg += `<text x="${x+w/2+8}" y="${tY + i*16}" font-family="${FONT}" font-size="13" fill="${nodeText}" text-anchor="middle">${escapeXml(l)}</text>`;
+      });
+      // 箭头
+      if (ni < row.nodes.length - 1) {
+        const ax = x + w;
+        const ay = y + NODE_H/2;
+        svg += `<line x1="${ax+2}" y1="${ay}" x2="${ax+NODE_GAP-4}" y2="${ay}" stroke="${c.num}" stroke-width="1.8"/>`;
+        svg += `<polygon points="${ax+NODE_GAP-4},${ay-4} ${ax+NODE_GAP},${ay} ${ax+NODE_GAP-4},${ay+4}" fill="${c.num}"/>`;
+      }
+      x += w + NODE_GAP;
+    });
+
+    // 状态标签（结尾后）
+    if (row.route.status === 'success') {
+      svg += `<text x="${x+4}" y="${y+NODE_H/2+5}" font-family="${FONT}" font-size="14" font-weight="700" fill="#43A047">✅ 成功</text>`;
+    } else if (row.route.status === 'fail') {
+      svg += `<text x="${x+4}" y="${y+NODE_H/2+5}" font-family="${FONT}" font-size="14" font-weight="700" fill="#E53935">❌ 失败</text>`;
+    }
+  });
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// 简易换行：按预估每行字符数
+function wrapText(text, perLine) {
+  text = (text || '').trim();
+  if (!text) return '';
+  if (text.length <= perLine) return text;
+  // 按字符粗暴切，每行 perLine 字
+  const lines = [];
+  for (let i = 0; i < text.length; i += perLine) {
+    lines.push(text.slice(i, i + perLine));
+    if (lines.length === 2) break;
+  }
+  return lines.join('\n');
+}
+
+/* ============== 导出 PNG ============== */
+function exportPng() {
+  const t = curTopic();
+  if (!t) { toast('请先选择主题'); return; }
+  const routesHasContent = t.routes.some(r => r.nodes.some(n => n.text.trim()));
+  if (!routesHasContent) { toast('路线没有内容，无法导出'); return; }
+
+  if (typeof html2canvas === 'undefined') {
+    toast('导出库未加载，请检查网络后刷新');
+    return;
+  }
+
+  // 在预览区生成一个临时的高清导出容器（避免受 preview-canvas 滚动/居中影响）
+  const target = document.getElementById('previewCanvas');
+  toast('生成中…');
+
+  html2canvas(target, {
+    backgroundColor: '#FAFAFA',
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    scrollX: 0,
+    scrollY: -window.scrollY,
+    windowWidth: target.scrollWidth,
+    windowHeight: target.scrollHeight
+  }).then(canvas => {
+    canvas.toBlob((b) => {
+      if (!b) { toast('导出失败：toBlob 返回空'); return; }
+      const dlUrl = URL.createObjectURL(b);
+      const a = document.createElement('a');
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+      a.href = dlUrl;
+      a.download = `${t.name}-思维路径-${stamp}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 2000);
+      toast('已导出 PNG ✓');
+    }, 'image/png');
+  }).catch(err => {
+    console.error('html2canvas fail', err);
+    toast('导出失败：' + (err.message || err));
+  });
+}
+
+/* ============== 工具 ============== */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return String(s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+function escapeXml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+}
+
+function renderAll() {
+  renderTabs();
+  renderRoutes();
+  renderPreview();
+}
+
+/* ============== 启动 ============== */
+load();
+renderAll();
+window.addEventListener('beforeunload', save);
+</script>
+</body>
+</html>
