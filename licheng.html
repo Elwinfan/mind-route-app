@@ -151,7 +151,10 @@
         .guide-tip b { color: #2563eb; }
         .guide-star { font-size: 13px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
         .guide-star b { color: #d97706; }
-        .guide-version { text-align: right; font-size: 11px; color: #94a3b8; margin-bottom: 10px; font-weight: 500; }
+        .guide-version { text-align: right; font-size: 11px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
+        .guide-update { font-size: 12px; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
+        .guide-update .update-title { font-weight: 600; color: #475569; margin-bottom: 2px; }
+        .guide-update ul { margin: 0; padding-left: 18px; color: #64748b; line-height: 1.7; }
         .guide-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; margin-bottom: 14px; }
         .guide-btn { width: 100%; padding: 13px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4BBBF8 0%, #2563eb 100%); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
         .guide-btn:active { transform: scale(.98); }
@@ -175,6 +178,12 @@
             <div class="guide-star">⭐ <b>建议收藏</b>：点击浏览器菜单「添加书签」，下次直接从书签打开，不用重新找链接。</div>
             <div class="guide-tip">💡 <b>小贴士</b>：部分浏览器（如夸克）不支持一次选多张照片，只能一张一张传，属正常现象。要批量上传请用 UC 或系统自带浏览器。</div>
             <div class="guide-version">v1.0.0</div>
+            <div class="guide-update">
+                <div class="update-title">📋 本次更新</div>
+                <ul>
+                    <li>支持收银台 / 挂条 / 大单品 三分类管理</li>
+                </ul>
+            </div>
             <label class="guide-check"><input type="checkbox" id="guideDontShow"> 下次不再提示</label>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
         </div>
