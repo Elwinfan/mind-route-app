@@ -260,7 +260,7 @@
     function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
     function ext(name){ const m=((name||'').match(/\.([a-zA-Z0-9]+)$/)||[,'jpg'])[1].toLowerCase(); return m==='jpeg'?'jpg':m; }
     function clean(s){ return (s||'').replace(/[\\/:*?"<>|\s]+/g,'').trim(); }
-    function toast(msg,t){ toastEl.textContent=msg; toastEl.className='toast show'+(t?' '+t:''); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),t==='err'?5000:5000); }
+    function toast(msg,t){ toastEl.textContent=msg; toastEl.className='toast show'+(t?' '+t:''); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),t==='err'?5000:2400); }
     function readAsDataURL(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(blob); }); }
     const thumbOf = p => p ? (p.thumb||p.data||'') : '';
     const fullOf  = p => p ? (p.full||p.data||'') : '';
@@ -493,7 +493,7 @@
             const zipName=`${fmtDate(dateInput.value)}+${name}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
-            toast('✅ '+zipName+'\n\n📲 下一步：打开企业微信 → 找到群/人 → 点 ＋ 号 → 文件 → 选刚才下载的zip','ok');
+            toast('✅ '+zipName,'ok');
         }catch(err){ toast('打包失败：'+err.message,'err'); }
         finally{ exportBtn.disabled=false; exportBtn.textContent=old; }
     });
