@@ -149,8 +149,9 @@
         .guide-warn b { color: #dc2626; }
         .guide-tip { font-size: 13px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
         .guide-tip b { color: #2563eb; }
-        .guide-star { font-size: 13px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 9px; margin-bottom: 14px; line-height: 1.6; }
+        .guide-star { font-size: 13px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
         .guide-star b { color: #d97706; }
+        .guide-version { text-align: right; font-size: 11px; color: #94a3b8; margin-bottom: 10px; font-weight: 500; }
         .guide-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; margin-bottom: 14px; }
         .guide-btn { width: 100%; padding: 13px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4BBBF8 0%, #2563eb 100%); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
         .guide-btn:active { transform: scale(.98); }
@@ -173,6 +174,7 @@
             </div>
             <div class="guide-star">⭐ <b>建议收藏</b>：点击浏览器菜单「添加书签」，下次直接从书签打开，不用重新找链接。</div>
             <div class="guide-tip">💡 <b>小贴士</b>：部分浏览器（如夸克）不支持一次选多张照片，只能一张一张传，属正常现象。要批量上传请用 UC 或系统自带浏览器。</div>
+            <div class="guide-version">v1.0.0</div>
             <label class="guide-check"><input type="checkbox" id="guideDontShow"> 下次不再提示</label>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
         </div>
@@ -258,7 +260,7 @@
     function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
     function ext(name){ const m=((name||'').match(/\.([a-zA-Z0-9]+)$/)||[,'jpg'])[1].toLowerCase(); return m==='jpeg'?'jpg':m; }
     function clean(s){ return (s||'').replace(/[\\/:*?"<>|\s]+/g,'').trim(); }
-    function toast(msg,t){ toastEl.textContent=msg; toastEl.className='toast show'+(t?' '+t:''); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),t==='err'?5000:2400); }
+    function toast(msg,t){ toastEl.textContent=msg; toastEl.className='toast show'+(t?' '+t:''); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),t==='err'?5000:5000); }
     function readAsDataURL(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(blob); }); }
     const thumbOf = p => p ? (p.thumb||p.data||'') : '';
     const fullOf  = p => p ? (p.full||p.data||'') : '';
@@ -491,7 +493,7 @@
             const zipName=`${fmtDate(dateInput.value)}+${name}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
-            toast('✅ '+zipName,'ok');
+            toast('✅ '+zipName+'\n\n📲 下一步：打开企业微信 → 找到群/人 → 点 ＋ 号 → 文件 → 选刚才下载的zip','ok');
         }catch(err){ toast('打包失败：'+err.message,'err'); }
         finally{ exportBtn.disabled=false; exportBtn.textContent=old; }
     });
