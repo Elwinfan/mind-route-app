@@ -166,6 +166,7 @@
         .step-content { flex: 1; font-size: 14px; color: #334155; line-height: 1.6; padding-top: 2px; }
         .step-content b { color: #0f172a; font-weight: 600; }
         .step-content small { display: block; font-size: 12px; color: #64748b; margin-top: 2px; }
+        .guide-divider { height: 1px; background: #e2e8f0; margin: 14px 0 12px; }
 
         /* ==================== 右下角❓按钮 ==================== */
         .help-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4BBBF8, #2563eb); color: #fff; border: none; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,.35); z-index: 90; display: flex; align-items: center; justify-content: center; }
@@ -204,7 +205,14 @@
                 </div>
             </div>
             <div class="guide-tip">💡 <b>建议</b>：每天随手传，别攒到月底一次传，轻松不慌。</div>
-            <label class="guide-check"><input type="checkbox" id="guideDontShow"> 下次不再提示</label>
+            <div class="guide-divider"></div>
+            <div class="guide-version">v1.2.0</div>
+            <div class="guide-update">
+                <div class="update-title">📋 本次更新</div>
+                <ul>
+                    <li>新增「势能补品」分类管理</li>
+                </ul>
+            </div>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
         </div>
     </div>
@@ -230,13 +238,6 @@
             </div>
             <div class="guide-star">⭐ <b>建议收藏</b>：点击浏览器菜单「添加书签」，下次直接从书签打开，不用重新找链接。</div>
             <div class="guide-tip">💡 <b>小贴士</b>：部分浏览器（如夸克）不支持一次选多张照片，只能一张一张传，属正常现象。要批量上传请用 UC 或系统自带浏览器。</div>
-            <div class="guide-version">v1.2.0</div>
-            <div class="guide-update">
-                <div class="update-title">📋 本次更新</div>
-                <ul>
-                    <li>新增「势能补品」分类管理</li>
-                </ul>
-            </div>
             <button class="guide-btn" id="helpCloseBtn" type="button">关闭</button>
         </div>
     </div>
@@ -291,23 +292,15 @@
 
     <script>
     /* ========================================================
-     * 使用说明弹窗 + 浏览器建议弹窗逻辑
+     * 使用说明弹窗（每次打开都弹）+ 浏览器建议弹窗（点❓触发）
      * ====================================================== */
     (function() {
-        // 使用说明弹窗（首次打开自动显示）
-        const KEY = 'lzul_guide_hide';
+        // 使用说明弹窗：每次打开网页都强制显示
         const guideOverlay = document.getElementById('guideOverlay');
-        function openGuide() {
-            if (localStorage.getItem(KEY) === 'true') return;
-            guideOverlay.classList.add('open');
-        }
-        function closeGuide() {
-            if (document.getElementById('guideDontShow').checked) localStorage.setItem(KEY, 'true');
-            guideOverlay.classList.remove('open');
-        }
+        function closeGuide() { guideOverlay.classList.remove('open'); }
         document.getElementById('guideStartBtn').addEventListener('click', closeGuide);
         guideOverlay.addEventListener('click', e => { if (e.target === guideOverlay) closeGuide(); });
-        window.addEventListener('load', openGuide);
+        window.addEventListener('load', () => guideOverlay.classList.add('open'));
 
         // 浏览器建议弹窗（点❓按钮触发）
         const helpOverlay = document.getElementById('helpOverlay');
