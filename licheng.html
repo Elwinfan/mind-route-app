@@ -66,7 +66,7 @@
             color: #1e293b;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px));
         }
 
         /* ==================== 门店整理样式 ==================== */
@@ -130,6 +130,17 @@
         .add { width: 100%; padding: 12px; border: 2px dashed #94a3b8; background: #fff; color: #475569; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .add:active { background: #f1f5f9; }
 
+        /* ==================== 底部目标进度条 ==================== */
+        .goalbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 16px; }
+        .goalbar .g { flex: 1; min-width: 0; }
+        .goalbar .gt-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .goalbar .gt-top .gnum { color: #64748b; font-weight: 700; }
+        .goalbar .gt-top .gnum.done { color: #16a34a; }
+        .goalbar .track { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .goalbar .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #16a34a); border-radius: 4px; transition: width .3s; }
+        .goalbar .fill.done { background: #16a34a; }
+        body { padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important; }
+
         /* ==================== toast ==================== */
         .toast { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: rgba(15,23,42,.92); color: #fff; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: .25s; z-index: 100000; max-width: 88vw; white-space: pre-line; font-size: 13px; text-align: center; }
         .toast.show { opacity: 1; }
@@ -169,7 +180,7 @@
         .guide-divider { height: 1px; background: #e2e8f0; margin: 14px 0 12px; }
 
         /* ==================== 右下角❓按钮 ==================== */
-        .help-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4BBBF8, #2563eb); color: #fff; border: none; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,.35); z-index: 90; display: flex; align-items: center; justify-content: center; }
+        .help-fab { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4BBBF8, #2563eb); color: #fff; border: none; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,.35); z-index: 90; display: flex; align-items: center; justify-content: center; }
         .help-fab:active { transform: scale(.92); }
         .guide-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; margin-bottom: 14px; }
         .guide-btn { width: 100%; padding: 13px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4BBBF8 0%, #2563eb 100%); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
@@ -206,11 +217,12 @@
             </div>
             <div class="guide-tip">💡 <b>建议</b>：每天随手传，别攒到月底一次传，轻松不慌。</div>
             <div class="guide-divider"></div>
-            <div class="guide-version">v1.3.0</div>
+            <div class="guide-version">v1.3.1</div>
             <div class="guide-update">
                 <div class="update-title">📋 本次更新</div>
                 <ul>
-                    <li>分类调整为两大类：「主题堆」「盒装陈列」（原收银台/挂条/大单品/势能补品已下线）</li>
+                    <li>新增底部目标进度条：主题堆 7 家 / 盒装陈列 80 家</li>
+                    <li>分类调整为两大类：「主题堆」「盒装陈列」</li>
                 </ul>
             </div>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
@@ -274,6 +286,18 @@
             </div>
         </section>
         <div class="toast" id="toast"></div>
+
+        <!-- 底部目标进度条：主题堆7家 / 盒装陈列80家 -->
+        <div class="goalbar" id="goalBar">
+            <div class="g">
+                <div class="gt-top"><span>⛰️ 主题堆</span><span class="gnum" id="goal-zhuti">0/7家</span></div>
+                <div class="track"><div class="fill" id="fill-zhuti"></div></div>
+            </div>
+            <div class="g">
+                <div class="gt-top"><span>📦 盒装陈列</span><span class="gnum" id="goal-hezhuang">0/80家</span></div>
+                <div class="track"><div class="fill" id="fill-hezhuang"></div></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -364,7 +388,16 @@
         document.getElementById(tab+'-list').innerHTML = mdData[tab].map(s=>cardHTML(tab,s)).join('');
         updateCount(tab);
     }
-    function updateCount(tab){ md$('#cnt-'+tab).textContent=mdData[tab].length+'家'; }
+    const GOALS = { zhuti:7, hezhuang:80 };
+    function updateCount(tab){
+        md$('#cnt-'+tab).textContent=mdData[tab].length+'家';
+        const n=mdData[tab].length, goal=GOALS[tab], done=n>=goal;
+        const gnum=md$('#goal-'+tab), fill=md$('#fill-'+tab);
+        gnum.textContent=Math.min(n,goal)+'/'+goal+'家'+(done?' ✅':'');
+        gnum.classList.toggle('done', done);
+        fill.style.width=Math.min(100, n/goal*100)+'%';
+        fill.classList.toggle('done', done);
+    }
     function appendCard(tab, s){
         const list=document.getElementById(tab+'-list');
         const tmp=document.createElement('div'); tmp.innerHTML=cardHTML(tab,s);
