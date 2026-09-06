@@ -536,7 +536,7 @@
                 exportBtn.textContent=`📦 ${Math.round((k+1)/items.length*100)}%`;
             }
             const out=await zip.generateAsync({type:'blob'});
-            const zipName=`${fmtDate(dateInput.value)}+${name}.zip`;
+            const zipName=`${name}+${fmtDate(dateInput.value)}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
             toast('✅ '+zipName,'ok');
