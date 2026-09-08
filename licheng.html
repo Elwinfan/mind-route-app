@@ -556,9 +556,9 @@
         const old=exportBtn.textContent; exportBtn.disabled=true;
         try{
             const items=[];
-            mdData.zhuti.forEach((s,i)=>{ const seq=i+1, sn=clean(s.store)||('门店'+seq);
+            mdData.zhuti.forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
                 items.push(['zt',`${seq}${sn}门头`,s.door]); items.push(['zt',`${seq}${sn}主题堆`,s.second]); });
-            mdData.hezhuang.forEach((s,i)=>{ const seq=i+1, sn=clean(s.store)||('门店'+seq);
+            mdData.hezhuang.forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
                 items.push(['hz',`${seq}${sn}门头`,s.door]); items.push(['hz',`${seq}${sn}盒装`,s.second]); });
             const zip=new JSZip();
             const zt=zip.folder('主题堆陈列'), hz=zip.folder('盒装陈列');
