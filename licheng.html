@@ -185,6 +185,16 @@
         .guide-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; margin-bottom: 14px; }
         .guide-btn { width: 100%; padding: 13px; border: none; border-radius: 12px; background: linear-gradient(135deg, #4BBBF8 0%, #2563eb 100%); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
         .guide-btn:active { transform: scale(.98); }
+
+        /* ==================== 打包选项弹窗 ==================== */
+        .exp-menu { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+        .exp-menu button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; }
+        .exp-menu .e1 { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .exp-menu .e2 { background: linear-gradient(135deg, #16a34a, #22c55e); }
+        .exp-menu .e3 { background: linear-gradient(135deg, #2563eb, #16a34a); }
+        .exp-menu .ec { background: #f1f5f9; color: #64748b; }
+        .exp-menu button:active { transform: scale(.98); }
+        .exp-menu small { display: block; font-size: 11px; font-weight: 500; opacity: .85; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -217,15 +227,29 @@
             </div>
             <div class="guide-tip">💡 <b>建议</b>：每天随手传，别攒到月底一次传，轻松不慌。</div>
             <div class="guide-divider"></div>
-            <div class="guide-version">v1.3.1</div>
+            <div class="guide-version">v1.4.0</div>
             <div class="guide-update">
                 <div class="update-title">📋 本次更新</div>
                 <ul>
-                    <li>新增底部目标进度条：主题堆 7 家 / 盒装陈列 80 家</li>
-                    <li>分类调整为两大类：「主题堆」「盒装陈列」</li>
+                    <li>打包改为三选一：只打包主题堆 / 只打包盒装陈列 / 两个一起</li>
+                    <li>门店名或照片没填齐的会被拦截提醒，不能导出</li>
+                    <li>照片序号补零（01/02/03），浏览时按顺序排列</li>
                 </ul>
             </div>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 打包选项弹窗 -->
+    <div id="exportOverlay" class="guide-overlay">
+        <div class="guide-card">
+            <h3 class="guide-title">📦 选择打包内容</h3>
+            <div class="exp-menu">
+                <button class="e1" id="exp-zhuti" type="button">⛰️ 只打包主题堆<small>压缩包里只有「主题堆陈列」文件夹</small></button>
+                <button class="e2" id="exp-hezhuang" type="button">📦 只打包盒装陈列<small>压缩包里只有「盒装陈列」文件夹</small></button>
+                <button class="e3" id="exp-all" type="button">🗂️ 两个分类一起打包<small>主题堆 + 盒装陈列，一个压缩包</small></button>
+                <button class="ec" id="exp-cancel" type="button">取消</button>
+            </div>
         </div>
     </div>
 
@@ -532,9 +556,9 @@
         toast('已清空','ok');
     });
 
-    function validate(){
+    function validate(tabs){
         const issues=[];
-        ['zhuti','hezhuang'].forEach(tab=>{
+        tabs.forEach(tab=>{
             mdData[tab].forEach((s,i)=>{ const lack=[];
                 if(!s.store.trim()) lack.push('门店名'); if(!s.door) lack.push('门头'); if(!s.second) lack.push(SECOND_LABEL[tab]);
                 if(lack.length) issues.push(`【${SECOND_LABEL[tab]}】第${i+1}家 缺：${lack.join('、')}`);
@@ -545,37 +569,49 @@
     function fmtDate(v){ const [y,m,d]=v.split('-').map(Number); return `${y}年${m}月${d}日`; }
     function dataUrlToBlob(d){ const [h,b]=d.split(','); const mime=(h.match(/:(.*?);/)||[,'image/jpeg'])[1]; const bin=atob(b); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return new Blob([a],{type:mime}); }
 
-    exportBtn.addEventListener('click', async ()=>{
+    // 打包选项弹窗
+    const exportOverlay = md$('#exportOverlay');
+    function closeExp(){ exportOverlay.classList.remove('open'); }
+    exportBtn.addEventListener('click', ()=> exportOverlay.classList.add('open'));
+    md$('#exp-cancel').addEventListener('click', closeExp);
+    exportOverlay.addEventListener('click', e=>{ if(e.target===exportOverlay) closeExp(); });
+    md$('#exp-zhuti').addEventListener('click', ()=> doExport(['zhuti']));
+    md$('#exp-hezhuang').addEventListener('click', ()=> doExport(['hezhuang']));
+    md$('#exp-all').addEventListener('click', ()=> doExport(['zhuti','hezhuang']));
+
+    async function doExport(tabs){
+        closeExp();
         const name=nameInput.value.trim();
         if(!name){ toast('请先填名字','err'); nameInput.focus(); return; }
         if(!dateInput.value){ toast('请选日期','err'); return; }
-        if(!mdData.zhuti.length && !mdData.hezhuang.length){ toast('请先添加门店','err'); return; }
-        const issues=validate();
-        if(issues.length){ toast('这些门店不完整，补全或删除：\n\n'+issues.join('\n'),'err'); return; }
+        if(!tabs.some(tab=>mdData[tab].length)){ toast('该分类还没添加门店','err'); return; }
+        const issues=validate(tabs);
+        if(issues.length){ toast('这些门店不完整（店名/照片没填的不能导出），补全或删除：\n\n'+issues.join('\n'),'err'); return; }
         if(typeof JSZip==='undefined'){ toast('压缩库加载失败，刷新重试','err'); return; }
         const old=exportBtn.textContent; exportBtn.disabled=true;
         try{
             const items=[];
-            mdData.zhuti.forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
-                items.push(['zt',`${seq}${sn}门头`,s.door]); items.push(['zt',`${seq}${sn}主题堆`,s.second]); });
-            mdData.hezhuang.forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
-                items.push(['hz',`${seq}${sn}门头`,s.door]); items.push(['hz',`${seq}${sn}盒装`,s.second]); });
+            tabs.forEach(tab=>{
+                const folderKey = tab==='zhuti'?'zt':'hz';
+                mdData[tab].forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
+                    items.push([folderKey,`${seq}${sn}门头`,s.door]); items.push([folderKey,`${seq}${sn}${SECOND_LABEL[tab]}`,s.second]); });
+            });
             const zip=new JSZip();
-            const zt=zip.folder('主题堆陈列'), hz=zip.folder('盒装陈列');
-            const folderMap={zt:zt,hz:hz};
+            const folders={ zt:zip.folder('主题堆陈列'), hz:zip.folder('盒装陈列') };
             for(let k=0;k<items.length;k++){
                 const [folder,base,photo]=items[k];
-                folderMap[folder].file(`${base}.${ext(photo.name)}`, dataUrlToBlob(fullOf(photo)));
+                folders[folder].file(`${base}.${ext(photo.name)}`, dataUrlToBlob(fullOf(photo)));
                 exportBtn.textContent=`📦 ${Math.round((k+1)/items.length*100)}%`;
             }
             const out=await zip.generateAsync({type:'blob'});
-            const zipName=`${name}+${fmtDate(dateInput.value)}.zip`;
+            const tag = tabs.length===2 ? '' : (tabs[0]==='zhuti'?'+主题堆':'+盒装陈列');
+            const zipName=`${name}+${fmtDate(dateInput.value)}${tag}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
             toast('✅ '+zipName,'ok');
         }catch(err){ toast('打包失败：'+err.message,'err'); }
         finally{ exportBtn.disabled=false; exportBtn.textContent=old; }
-    });
+    }
 
     // IndexedDB 持久化
     let _db;
