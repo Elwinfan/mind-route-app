@@ -230,8 +230,9 @@
 
         /* 照片预览大图 */
         .pv-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 99999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
-        .pv-overlay.open { display: flex; }
-        .pv-overlay img { max-width: 96vw; max-height: 92vh; object-fit: contain; border-radius: 6px; }
+        .pv-overlay.open { display: flex; flex-direction: column; }
+        .pv-overlay img { max-width: 96vw; max-height: 78vh; object-fit: contain; border-radius: 6px; }
+        .pv-overlay #pvSwap { position: relative; z-index: 2; margin-top: 18px; padding: 13px 34px; border: none; border-radius: 12px; background: #2563eb; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.4); }
 
         /* ==================== 整理标签（licheng 复刻） ==================== */
         .topbar { position: sticky; top: 47px; z-index: 30; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 10px 12px; }
@@ -389,7 +390,7 @@
         </div>
 
         <!-- 预览大图 -->
-        <div class=pv-overlay id=pvOverlay><img id=pvImg alt=></div>
+        <div class=pv-overlay id=pvOverlay><img id=pvImg alt=><button id=pvSwap type=button style="display:none">🔄 换这张</button></div>
     </section>
 
     <!-- ============ 整理面板（licheng 复刻） ============ -->
@@ -756,6 +757,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     function previewSeqPhoto(file){
         const url=URL.createObjectURL(file);
         $('#pvImg').src=url;
+        $('#pvSwap').style.display='none';
         $('#pvOverlay').classList.add('open');
         $('#pvOverlay').onclick=()=>{ $('#pvOverlay').classList.remove('open'); $('#pvImg').src=''; URL.revokeObjectURL(url); };
     }
@@ -874,6 +876,11 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         setTimeout(()=>$('#smStore').focus(), 250);
     }
 
+    $('#smPair').addEventListener('click', e=>{
+        const imgs=e.target.closest('img'); if(!imgs) return;
+        if(seq.door && imgs.src===seq.door.thumb) previewSeqPhoto(seq.door.file);
+        else if(seq.second && imgs.src===seq.second.thumb) previewSeqPhoto(seq.second.file);
+    });
     $('#smType').addEventListener('click', e=>{
         const b=e.target.closest('button'); if(!b) return;
         smTypeVal=b.dataset.t;
@@ -1061,6 +1068,15 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     ['zhuti','hezhuang'].forEach(tab=>{
         const list=document.getElementById(tab+'-list');
         list.addEventListener('click', e=>{
+            // 点已添加照片 = 放大预览（阻断 label 弹相册选择器）
+            const pvImg=e.target.closest('img.pv');
+            if(pvImg){
+                const card=pvImg.closest('.store-card');
+                const slot=pvImg.closest('.slot');
+                const st=findStore(tab, +card.dataset.id);
+                if(st && st[slot.dataset.type]){ e.preventDefault(); e.stopPropagation(); previewListPhoto(tab, card, slot.dataset.type); }
+                return;
+            }
             const card=e.target.closest('.store-card'); if(!card) return;
             const id=+card.dataset.id; const s=findStore(tab,id);
             const x=e.target.closest('.x');
@@ -1085,6 +1101,28 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             catch(err){ toast('处理失败','err'); }
         });
     });
+
+    // 列表照片放大 + 放大层里换图（v1.9）
+    function previewListPhoto(tab, card, type){
+        const s=findStore(tab, +card.dataset.id); if(!s || !s[type]) return;
+        const btn=$('#pvSwap');
+        $('#pvImg').src=s[type].full||s[type].thumb;
+        btn.style.display='';
+        $('#pvOverlay').classList.add('open');
+        $('#pvOverlay').onclick=()=>{ closePv(); };
+        btn.onclick=(ev)=>{
+            ev.stopPropagation();
+            closePv();
+            const input=card.querySelector('.slot[data-type="'+type+'"] input[type=file]');
+            if(input) input.click();   // 复用现有 change 上传替换逻辑
+        };
+    }
+    function closePv(){
+        $('#pvOverlay').classList.remove('open');
+        $('#pvImg').src='';
+        $('#pvSwap').style.display='none';
+        $('#pvSwap').onclick=null;
+    }
 
     async function fileToPhoto(file){
         try{
