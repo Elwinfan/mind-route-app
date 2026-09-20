@@ -119,6 +119,9 @@
         .main-tabs .mtab.active { color: #2563eb; border-bottom-color: #2563eb; }
         .main-tabs .mtab .bdg { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: #e2e8f0; color: #475569; font-size: 11px; font-weight: 700; line-height: 18px; vertical-align: 2px; }
         .main-tabs .mtab.active .bdg { background: #dbeafe; color: #2563eb; }
+        .main-tabs .bk-bar { flex: 0 0 auto; display: flex; align-items: center; padding: 0 8px; gap: 6px; }
+        .main-tabs .bk-btn { width: 34px; height: 34px; border: none; border-radius: 8px; background: #f1f5f9; font-size: 16px; cursor: pointer; }
+        .main-tabs .bk-btn:active { background: #e2e8f0; }
         .main-panel { display: none; }
         .main-panel.active { display: block; }
 
@@ -256,6 +259,11 @@
     <nav class="main-tabs">
         <button class="mtab active" id="mtab-wm" type="button">🖊️ 水印</button>
         <button class="mtab" id="mtab-md" type="button">🗂️ 整理<span class="bdg" id="mdBadge">0</span></button>
+        <span class="bk-bar">
+            <button class="bk-btn" id="bkSave" type="button" title="备份：导出全部数据（照片/门店/地址）">💾</button>
+            <button class="bk-btn" id="bkLoad" type="button" title="恢复：从备份文件还原">↩️</button>
+        </span>
+        <input type="file" id="bkFile" accept=".json,application/json" hidden>
     </nav>
 
     <!-- ============ 水印面板 ============ -->
@@ -1017,7 +1025,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             const zipName=`${name}+${fmtDate(dateInput.value)}${tag}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
-            toast('✅ '+zipName,'ok');
+            toast('✅ '+zipName+'（建议点右上💾备份留底）','ok');
         }catch(err){ toast('打包失败：'+err.message,'err'); }
         finally{ exportBtn.disabled=false; exportBtn.textContent=old; }
     }
@@ -1027,6 +1035,39 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     function db(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('mendianzip5',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>{_db=r.result;res(_db);}; r.onerror=()=>rej(r.error); }); }
     async function idbPut(v){ try{ const d=await db(); await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite'); t.objectStore('kv').put(v,'cur'); t.oncomplete=res; t.onerror=()=>rej(t.error);}); }catch(e){} }
     async function idbGet(){ try{ const d=await db(); return await new Promise(res=>{const t=d.transaction('kv','readonly'); const q=t.objectStore('kv').get('cur'); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null);}); }catch(e){ return null; } }
+
+    // ===== 备份/恢复（防浏览器清缓存丢数据，2026-09-20）=====
+    async function exportBackup(){
+        try{
+            const state = await idbGet() || serialize();
+            let addr=[]; try{ addr=JSON.parse(localStorage.getItem(ADDR_KEY))||[]; }catch(e){}
+            const data={ app:'lcsp', ver:1, at:new Date().toISOString(), state, addr };
+            const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+            const a=document.createElement('a');
+            a.href=URL.createObjectURL(blob);
+            a.download='LCSP备份-'+new Date().toISOString().slice(0,10)+'.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+            toast('✅ 备份已下载，建议存到文件管理或发微信留底','ok');
+        }catch(err){ toast('备份失败：'+err.message,'err'); }
+    }
+    function importBackup(file){
+        const r=new FileReader();
+        r.onload=()=>{
+            let data=null;
+            try{ data=JSON.parse(r.result); }catch(e){}
+            if(!data || data.app!=='lcsp' || !data.state){ toast('不是有效的LCSP备份文件','err'); return; }
+            const n=(data.state.zhuti||[]).length+(data.state.hezhuang||[]).length;
+            const when=data.at?new Date(data.at).toLocaleString():'未知时间';
+            if(!confirm('恢复备份（'+when+'，共'+n+'家门店）？\n\n当前照片、门店、地址历史将被覆盖，确定继续？')) return;
+            try{ if(Array.isArray(data.addr)) localStorage.setItem(ADDR_KEY, JSON.stringify(data.addr)); }catch(e){}
+            idbPut(data.state).then(()=>location.reload());
+        };
+        r.readAsText(file,'utf-8');
+    }
+    $('#bkSave').addEventListener('click', exportBackup);
+    $('#bkLoad').addEventListener('click', ()=>$('#bkFile').click());
+    $('#bkFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) importBackup(f); e.target.value=''; });
     function serialize(){ return { name:nameInput.value, note:$('#wmNoteInput').value, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang }; }
     let saveTimer; let saving=false;
     function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,800); }
