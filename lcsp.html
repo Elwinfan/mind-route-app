@@ -122,6 +122,42 @@
         .main-tabs .bk-bar { flex: 0 0 auto; display: flex; align-items: center; padding: 0 8px; gap: 6px; }
         .main-tabs .bk-btn { width: 34px; height: 34px; border: none; border-radius: 8px; background: #f1f5f9; font-size: 16px; cursor: pointer; }
         .main-tabs .bk-btn:active { background: #e2e8f0; }
+
+        /* ==================== 逐张顺序添加（v1.6） ==================== */
+        .seq-status { padding: 14px 14px 6px; }
+        .seq-hint { font-size: 13px; color: #64748b; margin-bottom: 10px; }
+        .seq-slots { display: flex; gap: 10px; }
+        .seq-slots .slot { flex: 1; min-height: 110px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #f8fafc; }
+        .seq-slots .slot.next { border-color: #2563eb; background: #eff6ff; }
+        .seq-slots .slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .seq-slots .slot .slot-tag { position: relative; z-index: 1; font-size: 13px; font-weight: 700; color: #94a3b8; padding: 3px 10px; border-radius: 10px; background: rgba(255,255,255,.85); }
+        .seq-slots .slot.filled .slot-tag { color: #16a34a; }
+        .seq-actions { display: flex; gap: 10px; margin-top: 12px; }
+        .seq-actions .seq-add { flex: 1; padding: 14px; border: none; border-radius: 12px; background: #2563eb; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .seq-actions .seq-add:active { background: #1d4ed8; }
+        .seq-actions .seq-undo { padding: 14px 16px; border: none; border-radius: 12px; background: #f1f5f9; color: #475569; font-size: 14px; cursor: pointer; }
+
+        /* 门店信息弹框：锚中上部+底部大留白，键盘弹起内容可滚上来 */
+        .seq-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(15,23,42,.5); overflow-y: auto; padding: 5vh 14px 45vh; }
+        .seq-modal.open { display: block; }
+        .seq-modal-card { max-width: 440px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 18px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+        .seq-modal-title { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+        .seq-pair { display: flex; gap: 8px; margin-bottom: 12px; }
+        .seq-pair img { width: 50%; height: 86px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .seq-modal-card .f { margin-bottom: 10px; }
+        .seq-modal-card .f label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+        .seq-modal-card input[type="text"], .seq-modal-card input[type="time"], .seq-modal-card input[type="date"] { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 16px; background: #fff; }
+        .seq-modal-card input:focus { outline: none; border-color: #2563eb; }
+        .seq-modal-card .row { display: flex; gap: 10px; }
+        .seq-modal-card .row .f { flex: 1; }
+        .seq-tip { display: block; font-size: 12px; color: #94a3b8; margin: -4px 0 8px; }
+        .addr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .addr-chips button { padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 13px; color: #334155; cursor: pointer; }
+        .addr-chips button:active { background: #dbeafe; border-color: #2563eb; color: #2563eb; }
+        .seq-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+        .seq-modal-actions .go { flex: 1; padding: 13px; border: none; border-radius: 12px; background: #16a34a; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+        .seq-modal-actions .go:disabled { background: #94a3b8; }
+        .seq-modal-actions .clr { padding: 13px 12px; border: none; border-radius: 12px; background: #f1f5f9; color: #475569; font-size: 14px; cursor: pointer; }
         .main-panel { display: none; }
         .main-panel.active { display: block; }
 
@@ -266,44 +302,51 @@
         <input type="file" id="bkFile" accept=".json,application/json" hidden>
     </nav>
 
-    <!-- ============ 水印面板 ============ -->
+    <!-- ============ 水印面板（v1.6 逐张顺序添加：1门头→2陈列 自动成组） ============ -->
     <section id="wm-panel" class="main-panel active">
         <div class="wm-wrap">
             <div class="wm-note">
                 <label>水印备注行（全局，所有照片共用）</label>
                 <input id="wmNoteInput" type="text" maxlength="50" placeholder="力诚食品-泉州办-何非凡">
             </div>
-            <label class="wm-drop" id="wmDrop">📥 拖入 / 点击选择照片
-                <input id="wmFileInput" type="file" accept="image/*" multiple>
-                <small>可一次丢一堆，再逐组分配</small>
-            </label>
-            <div class="wm-grid" id="wmGrid"></div>
-            <div class="wm-empty" id="wmEmpty">还没有照片，先拖一批进来</div>
+
+            <div class="seq-status">
+                <div class="seq-hint" id="seqHint">第1张 = 门头照，第2张 = 陈列照（默认盒装），自动成组</div>
+                <div class="seq-slots">
+                    <div class="slot" id="slotDoor"><span class="slot-tag">① 门头</span></div>
+                    <div class="slot" id="slotSecond"><span class="slot-tag">② 陈列</span></div>
+                </div>
+                <div class="seq-actions">
+                    <button class="seq-add" id="seqAddBtn" type="button">➕ 加照片</button>
+                    <button class="seq-undo" id="seqUndoBtn" type="button" style="display:none">↩️ 撤销上一张</button>
+                </div>
+                <input type="file" id="seqFileInput" accept="image/*" hidden>
+            </div>
         </div>
 
-        <!-- 分配表单（勾选照片后出现） -->
-        <div class="wm-form" id="wmForm">
-            <div class="wm-selinfo" id="wmSelInfo">已勾选 <b id="wmSelN">0</b> 张：第1张→门头，第2张→陈列照（时间自动晚1~10分钟）</div>
-            <div class="row">
-                <div class="f"><label>门店名</label><input id="wmStore" type="text" maxlength="40" placeholder="沃尔玛"></div>
-                <div class="f sm"><label>时间</label><input id="wmTime" type="time"></div>
-                <div class="f sm"><label>日期</label><input id="wmDate" type="date"></div>
-            </div>
-            <div class="row">
-                <div class="f"><label>地址（自动记忆）</label>
-                    <input id="wmAddr" type="text" maxlength="60" list="wmAddrList" placeholder="泉州市·沃尔玛">
-                    <datalist id="wmAddrList"></datalist>
+        <!-- 门店信息弹框（第2张照片进来时自动弹出，手机键盘友好） -->
+        <div class="seq-modal" id="seqModal">
+            <div class="seq-modal-card">
+                <div class="seq-modal-title">🏪 填写门店信息</div>
+                <div class="seq-pair" id="smPair"></div>
+                <div class="f"><label>门店名 *</label><input id="smStore" type="text" maxlength="40" placeholder="沃尔玛" autocomplete="off"></div>
+                <div class="f"><label>地址（点下方可快速填入）*</label>
+                    <input id="smAddr" type="text" maxlength="60" placeholder="泉州市·沃尔玛" autocomplete="off">
+                    <div class="addr-chips" id="smAddrChips"></div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="wm-type" id="wmType">
+                <div class="row">
+                    <div class="f sm"><label>时间（门头）*</label><input id="smTime" type="time"></div>
+                    <div class="f sm"><label>日期 *</label><input id="smDate" type="date"></div>
+                </div>
+                <div class="row"><small class="seq-tip">陈列照时间自动比门头晚 1~10 分钟</small></div>
+                <div class="wm-type" id="smType">
                     <button type="button" data-t="hezhuang" class="active">📦 盒装陈列</button>
                     <button type="button" data-t="zhuti" class="zt">⛰️ 主题堆</button>
                 </div>
-            </div>
-            <div class="wm-actions">
-                <button class="go" id="wmGoBtn" type="button" disabled>✅ 完成加水印</button>
-                <button class="clr" id="wmClrBtn" type="button">取消勾选</button>
+                <div class="seq-modal-actions">
+                    <button class="go" id="smOk" type="button">✅ 确认加水印</button>
+                    <button class="clr" id="smCancel" type="button">撤掉第2张重选</button>
+                </div>
             </div>
         </div>
 
@@ -323,8 +366,8 @@
                 <button class="export" id="exportBtn" type="button">📦 打包</button>
             </div>
             <div class="md-segment">
-                <button class="seg-btn active" id="tab-zhuti" type="button">主题堆<small id="cnt-zhuti">1家</small></button>
-                <button class="seg-btn gt" id="tab-hezhuang" type="button">盒装陈列<small id="cnt-hezhuang">1家</small></button>
+                <button class="seg-btn gt active" id="tab-hezhuang" type="button">盒装陈列<small id="cnt-hezhuang">1家</small></button>
+                <button class="seg-btn" id="tab-zhuti" type="button">主题堆<small id="cnt-zhuti">1家</small></button>
             </div>
         </div>
 
@@ -588,7 +631,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     const GOALS = { zhuti:7, hezhuang:80 };
     let mdUid = 1;
     const mdData = { zhuti:[], hezhuang:[] };
-    let curTab = 'zhuti';
+    let curTab = 'hezhuang';
 
     const nameInput = $('#nameInput'), dateInput = $('#dateInput');
     const toastEl = $('#toast'), exportBtn = $('#exportBtn');
@@ -632,147 +675,136 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     $('#mtab-md').addEventListener('click', ()=>switchMainTab('md'));
     function updateBadge(){ $('#mdBadge').textContent = mdData.zhuti.length + mdData.hezhuang.length; }
 
-    /* ========================================================
-     * 水印标签：照片池 + 分配
+    /* ======================================================
+     * 水印标签：逐张顺序添加（v1.6）第1张=门头 第2张=陈列 自动成组
      * ====================================================== */
-    let wmPool = [];   // {id, file, thumb, url(预览用)}
-    let wmSeq = 1;
-    let wmSelOrder = [];  // 按勾选顺序存 id，第1个=门头，第2个=陈列
-    let wmBusy = false;
+    let seq = { phase: 0, door: null, second: null };   // phase: 0=待门头 1=待陈列
+    let lastMeta = null;    // {time, date} 下一组默认沿用上一组
+    let seqBusy = false;
+    let smTypeVal = 'hezhuang';
 
-    const wmGrid=$('#wmGrid'), wmEmpty=$('#wmEmpty'), wmForm=$('#wmForm');
-    const wmStore=$('#wmStore'), wmTime=$('#wmTime'), wmDate=$('#wmDate'), wmAddr=$('#wmAddr');
+    const slotDoor=$('#slotDoor'), slotSecond=$('#slotSecond');
 
-    // 地址记忆（localStorage）
+    // 地址记忆（localStorage → 平铺按钮，手机 datalist 不可靠）
     const ADDR_KEY = 'wm_addr_history';
     function loadAddrHist(){ try{ return JSON.parse(localStorage.getItem(ADDR_KEY))||[]; }catch(e){ return []; } }
-    function renderAddrHist(){
-        $('#wmAddrList').innerHTML = loadAddrHist().map(a=>`<option value="${esc(a)}">`).join('');
+    function renderAddrChips(){
+        $('#smAddrChips').innerHTML = loadAddrHist().map(a=>`<button type="button" data-a="${esc(a)}">${esc(a)}</button>`).join('');
     }
     function pushAddrHist(a){
         a=(a||'').trim(); if(!a) return;
         let h=loadAddrHist().filter(x=>x!==a);
         h.unshift(a); h=h.slice(0,20);
         try{ localStorage.setItem(ADDR_KEY, JSON.stringify(h)); }catch(e){}
-        renderAddrHist();
+        renderAddrChips();
     }
-
-    async function poolAdd(files){
-        const imgs = files.filter(f=>f.type && f.type.startsWith('image/'));
-        if(!imgs.length){ toast('没有可用的图片文件','err'); return; }
-        toast(`导入 ${imgs.length} 张中…`);
-        for(let k=0;k<imgs.length;k++){
-            const f=imgs[k];
-            let thumb=null;
-            try{
-                const bmp=await createImageBitmap(f);
-                thumb=await scaleTo(bmp,400,0.7);
-                if(bmp.close) bmp.close();
-            }catch(e){}
-            if(!thumb){ try{ thumb=await readAsDataURL(f); }catch(e){ continue; } }
-            wmPool.push({ id:wmSeq++, file:f, thumb });
-            if(k % 10 === 9) await new Promise(r=>setTimeout(r,0));
-        }
-        renderPool();
-        toast(`✅ 已导入 ${imgs.length} 张，勾选照片开始分配`,'ok');
-    }
-
-    function renderPool(){
-        wmGrid.innerHTML = wmPool.map(p=>{
-            const ordIdx = wmSelOrder.indexOf(p.id);
-            const ord = ordIdx===0 ? '①门头' : (ordIdx===1 ? '②陈列' : '');
-            return `<div class="wm-cell ${ordIdx>-1?'sel':''}" data-id="${p.id}">
-                <img src="${p.thumb}" alt="" loading="lazy">
-                <span class="ck">✓</span>
-                <span class="ord">${ord}</span>
-            </div>`;
-        }).join('');
-        wmEmpty.style.display = wmPool.length ? 'none' : 'block';
-        updateSelUI();
-    }
-
-    function updateSelUI(){
-        const n = wmSelOrder.length;
-        $('#wmSelN').textContent = n;
-        $('#wmSelInfo').classList.toggle('show', n>0);
-        wmForm.classList.toggle('show', n>0);
-        $('#wmGoBtn').disabled = !(n===1 || n===2);
-    }
-
-    // 点照片 = 勾选/取消；长按/双击 = 预览？——单击切换勾选，缩略图右键不搞，加独立预览：点序号外区域？简单方案：单击=勾选，双击=预览
-    let lastTap = {id:0, t:0};
-    wmGrid.addEventListener('click', e=>{
-        const cell=e.target.closest('.wm-cell'); if(!cell) return;
-        const id=+cell.dataset.id;
-        const now=Date.now();
-        if(lastTap.id===id && now-lastTap.t<350){ previewPoolPhoto(id); lastTap={id:0,t:0}; return; }
-        lastTap={id, t:now};
-        toggleSel(id);
+    $('#smAddrChips').addEventListener('click', e=>{
+        const b=e.target.closest('button[data-a]'); if(!b) return;
+        $('#smAddr').value=b.dataset.a;
     });
-    function toggleSel(id){
-        const i=wmSelOrder.indexOf(id);
-        if(i>-1){ wmSelOrder.splice(i,1); }
-        else{
-            if(wmSelOrder.length>=2){ toast('一次最多勾 2 张（一家店），多店请分批处理','err'); return; }
-            wmSelOrder.push(id);
-        }
-        renderPool();
+
+    function renderSeq(){
+        slotDoor.className = 'slot' + (seq.door?' filled':'') + (seq.phase===0?' next':'');
+        slotDoor.innerHTML = (seq.door?`<img src="${seq.door.thumb}" alt="">`:'') + '<span class="slot-tag">① 门头</span>';
+        slotSecond.className = 'slot' + (seq.second?' filled':'') + (seq.phase===1?' next':'');
+        slotSecond.innerHTML = (seq.second?`<img src="${seq.second.thumb}" alt="">`:'') + '<span class="slot-tag">② 陈列</span>';
+        $('#seqHint').textContent = seq.phase===0
+            ? '第1张 = 门头照，第2张 = 陈列照（默认盒装），自动成组'
+            : '门头已就位，选第2张 → 自动弹填写框';
+        $('#seqAddBtn').textContent = seq.phase===0 ? '➕ 选门头照' : '➕ 选陈列照';
+        $('#seqUndoBtn').style.display = seq.phase===1 ? '' : 'none';
     }
-    function previewPoolPhoto(id){
-        const p=wmPool.find(x=>x.id===id); if(!p) return;
-        const url=URL.createObjectURL(p.file);
+    function previewSeqPhoto(file){
+        const url=URL.createObjectURL(file);
         $('#pvImg').src=url;
         $('#pvOverlay').classList.add('open');
         $('#pvOverlay').onclick=()=>{ $('#pvOverlay').classList.remove('open'); $('#pvImg').src=''; URL.revokeObjectURL(url); };
     }
+    slotDoor.addEventListener('click', ()=>{ if(seq.door) previewSeqPhoto(seq.door.file); });
+    slotSecond.addEventListener('click', ()=>{ if(seq.second) previewSeqPhoto(seq.second.file); });
 
-    // 上传入口（点击 + 拖拽）
-    $('#wmFileInput').addEventListener('change', e=>{ const fs=Array.from(e.target.files); e.target.value=''; poolAdd(fs); });
-    const wmDrop=$('#wmDrop');
-    ['dragenter','dragover'].forEach(ev=>wmDrop.addEventListener(ev, e=>{ e.preventDefault(); wmDrop.classList.add('drag'); }));
-    ['dragleave','drop'].forEach(ev=>wmDrop.addEventListener(ev, e=>{ e.preventDefault(); wmDrop.classList.remove('drag'); }));
-    wmDrop.addEventListener('drop', e=>{ poolAdd(Array.from(e.dataTransfer.files)); });
-    // 整页拖拽兜底
-    document.addEventListener('dragover', e=>e.preventDefault());
-    document.addEventListener('drop', e=>{ if(!wmDrop.contains(e.target)){ e.preventDefault(); poolAdd(Array.from(e.dataTransfer.files)); } });
+    async function makeThumb(file){
+        try{
+            const bmp=await createImageBitmap(file);
+            const t=await scaleTo(bmp,400,0.7);
+            if(bmp.close) bmp.close();
+            if(t) return t;
+        }catch(e){}
+        return await readAsDataURL(file);
+    }
 
-    // 类型切换（盒装/主题堆）
-    let wmType = 'hezhuang';
-    $('#wmType').addEventListener('click', e=>{
-        const b=e.target.closest('button'); if(!b) return;
-        wmType=b.dataset.t;
-        $('#wmType').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b));
+    // 逐张添加入口：第1张→门头槽，第2张→弹填写框
+    $('#seqFileInput').addEventListener('change', async e=>{
+        const f=e.target.files[0]; e.target.value='';
+        if(!f || !(f.type&&f.type.startsWith('image/'))){ toast('请选择图片文件','err'); return; }
+        if(seqBusy) return;
+        toast('读取照片中…');
+        const thumb=await makeThumb(f);
+        if(seq.phase===0){
+            seq.door={ file:f, thumb }; seq.phase=1;
+            renderSeq(); toast('① 门头就位，继续选第2张陈列照','ok');
+        }else{
+            seq.second={ file:f, thumb };
+            renderSeq();
+            openStoreModal();
+        }
+    });
+    $('#seqAddBtn').addEventListener('click', ()=>$('#seqFileInput').click());
+    $('#seqUndoBtn').addEventListener('click', ()=>{
+        if(seq.phase===1 && !$('#seqModal').classList.contains('open')){
+            seq.door=null; seq.phase=0; renderSeq(); toast('已撤销门头照，重新选');
+        }
     });
 
-    $('#wmClrBtn').addEventListener('click', ()=>{ wmSelOrder=[]; renderPool(); });
+    function openStoreModal(){
+        renderAddrChips();
+        $('#smTime').value = lastMeta ? lastMeta.time : nowHM();
+        $('#smDate').value = lastMeta ? lastMeta.date : (dateInput.value || new Date().toISOString().slice(0,10));
+        $('#smPair').innerHTML = `<img src="${seq.door.thumb}" alt="门头"><img src="${seq.second.thumb}" alt="陈列">`;
+        $('#smStore').value='';
+        $('#smAddr').value='';
+        $('#seqModal').classList.add('open');
+        setTimeout(()=>$('#smStore').focus(), 250);
+    }
 
-    // 加水印主流程
-    $('#wmGoBtn').addEventListener('click', async ()=>{
-        if(wmBusy) return;
-        const n=wmSelOrder.length;
-        if(n!==1 && n!==2) return;
-        const store=wmStore.value.trim();
-        const time=wmTime.value;
-        const date=wmDate.value;
-        const addr=wmAddr.value.trim();
+    $('#smType').addEventListener('click', e=>{
+        const b=e.target.closest('button'); if(!b) return;
+        smTypeVal=b.dataset.t;
+        $('#smType').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b));
+    });
+    $('#smCancel').addEventListener('click', ()=>{
+        $('#seqModal').classList.remove('open');
+        seq.second=null; renderSeq(); toast('已撤掉第2张，重新选陈列照');
+    });
+    // 手机键盘适配：输入框聚焦时滚到可视区中央
+    $('#seqModal').addEventListener('focusin', e=>{
+        if(e.target.matches('input')) setTimeout(()=>{ try{ e.target.scrollIntoView({block:'center',behavior:'smooth'}); }catch(_){} }, 300);
+    });
+
+    // 确认加水印主流程（门头=弹框时间，陈列=自动+随机1~10分钟）
+    $('#smOk').addEventListener('click', async ()=>{
+        if(seqBusy) return;
+        const store=$('#smStore').value.trim();
+        const time=$('#smTime').value;
+        const date=$('#smDate').value;
+        const addr=$('#smAddr').value.trim();
         const note=$('#wmNoteInput').value.trim();
-        if(!store){ toast('请填门店名','err'); wmStore.focus(); return; }
-        if(!time){ toast('请填时间','err'); wmTime.focus(); return; }
-        if(!date){ toast('请选日期','err'); wmDate.focus(); return; }
-        if(!addr){ toast('请填地址','err'); wmAddr.focus(); return; }
+        if(!store){ toast('请填门店名','err'); $('#smStore').focus(); return; }
+        if(!time){ toast('请选时间','err'); $('#smTime').focus(); return; }
+        if(!date){ toast('请选日期','err'); $('#smDate').focus(); return; }
+        if(!addr){ toast('请填地址','err'); $('#smAddr').focus(); return; }
         if(!note){ toast('请填水印备注（页面顶部全局设置）','err'); return; }
 
-        wmBusy=true;
-        const btn=$('#wmGoBtn'); const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ 加水印中…';
+        seqBusy=true;
+        const btn=$('#smOk'); const old=btn.textContent; btn.disabled=true; btn.textContent='⏳ 加水印中…';
         try{
-            // 同店两张错开：门头=表单时间，陈列=门头+随机1~10分钟（还原进门走到货架的间隔）
             const gapMin = 1 + Math.floor(Math.random()*10);
             const photos=[];
-            for(let k=0;k<wmSelOrder.length;k++){
-                const p=wmPool.find(x=>x.id===wmSelOrder[k]); if(!p) continue;
+            const pair=[seq.door, seq.second];
+            for(let k=0;k<pair.length;k++){
+                const p=pair[k]; if(!p) continue;
                 const photoTime = (k===1) ? addMinutes(time, gapMin) : time;
                 const bmp=await createImageBitmap(p.file);
-                // 压缩画布（长边≤1920）
                 let w=bmp.width, h=bmp.height;
                 const longSide=Math.max(w,h);
                 if(longSide>EXPORT_MAX_LONG){ const sc=EXPORT_MAX_LONG/longSide; w=Math.round(w*sc); h=Math.round(h*sc); }
@@ -780,7 +812,6 @@ function drawLogoText(ctx, canvas, effectiveScale) {
                 const cx=c.getContext('2d');
                 cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality='high';
                 cx.drawImage(bmp,0,0,w,h);
-                // 盖水印
                 renderWatermark(c, { image: bmp, time: photoTime, date: wmFmtDate(date), address: addr, note, scale: 2 });
                 const fullBlob=await new Promise(r=>c.toBlob(r,'image/jpeg',EXPORT_QUALITY));
                 const full=await readAsDataURL(fullBlob);
@@ -790,34 +821,26 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             }
             if(!photos.length) throw new Error('没有处理成功的照片');
 
-            // 流转到整理标签（第1张→门头，第2张→陈列；单张作为门头照）
-            const tab = wmType;
+            const tab = smTypeVal;
             const [p1, p2] = photos;
-            const result = deliverPhotos(tab, store, p1 || null, p2 || null);
-            let msg;
-            if(n===2){
-                msg = `✅「${store}」已加水印 → 整理·${SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`;
-            } else {
-                msg = result==='filled-existing'
-                    ? `✅「${store}」门头照已补入已有门店卡片`
-                    : `✅「${store}」已加水印 → 整理·${SECOND_LABEL[tab]}（仅门头，${mdData[tab].length}/${GOALS[tab]}家）`;
-            }
-            if(String(result).startsWith('dropped')) msg += `\n⚠️ 该门店槽位已有照片，${result.split('-')[1]}张未覆盖`;
-            // 从池子移除
-            wmPool = wmPool.filter(x=>!wmSelOrder.includes(x.id));
-            wmSelOrder=[];
-            renderPool();
-            // 地址入库 + 重置表单（保留门店名方便连打？清空更防错）
+            deliverPhotos(tab, store, p1 || null, p2 || null);
             pushAddrHist(addr);
-            wmStore.value=''; wmTime.value=nowHM();
+            lastMeta = { time, date };
+            seq = { phase: 0, door: null, second: null };
+            renderSeq();
             updateBadge();
-            toast(msg,'ok');
+            $('#seqModal').classList.remove('open');
+            toast(`✅「${store}」已加水印 → 整理·${SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`,'ok');
         }catch(err){
             toast('加水印失败：'+(err.message||err),'err');
         }finally{
-            wmBusy=false; btn.disabled=false; btn.textContent=old; updateSelUI();
+            seqBusy=false; btn.disabled=false; btn.textContent=old;
         }
     });
+
+    renderSeq();
+
+
 
     // 照片流入整理：第1张=门头 第2张=陈列；单张(门头)优先补已有同名门店的空门头槽
     function deliverPhotos(tab, storeName, door, second){
@@ -841,7 +864,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
 
     // 离开页面前：池子还有照片时提醒
     window.addEventListener('beforeunload', e=>{
-        if(wmPool.length && !wmBusy){ e.preventDefault(); e.returnValue='照片池还有未处理的照片，确定离开？'; }
+        if((seq.door||seq.second) && !seqBusy){ e.preventDefault(); e.returnValue='还有照片没完成整理，确定离开？'; }
     });
 
     /* ========================================================
@@ -967,7 +990,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         document.getElementById('zhuti-list').innerHTML='';
         document.getElementById('hezhuang-list').innerHTML='';
         addStore('zhuti'); addStore('hezhuang');
-        if(curTab!=='zhuti') switchTab('zhuti');
+        if(curTab!=='hezhuang') switchTab('hezhuang');
         updateBadge();
         toast('已清空（水印备注不受影响）','ok');
     });
@@ -1077,14 +1100,13 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     // 初始化
     (function initNow(){
         setToday();
-        wmDate.value=dateInput.value;
-        wmTime.value=nowHM();
         $('#wmNoteInput').value='力诚食品-泉州办-何非凡';
-        renderAddrHist();
+        renderAddrChips();
         mdData.zhuti.push({ id:mdUid++, store:'', door:null, second:null });
         mdData.hezhuang.push({ id:mdUid++, store:'', door:null, second:null });
         renderList('zhuti'); renderList('hezhuang');
         updateBadge();
+        switchTab('hezhuang');
     })();
     (async ()=>{
         try{
