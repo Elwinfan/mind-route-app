@@ -320,14 +320,14 @@
                     <button class="seq-add" id="seqAddBtn" type="button">➕ 加照片</button>
                     <button class="seq-undo" id="seqUndoBtn" type="button" style="display:none">↩️ 撤销上一张</button>
                 </div>
-                <input type="file" id="seqFileInput" accept="image/*" hidden>
+                <input type="file" id="seqFileInput" accept="image/*" multiple hidden>
             </div>
         </div>
 
         <!-- 门店信息弹框（第2张照片进来时自动弹出，手机键盘友好） -->
         <div class="seq-modal" id="seqModal">
             <div class="seq-modal-card">
-                <div class="seq-modal-title">🏪 填写门店信息</div>
+                <div class="seq-modal-title">🏪 填写门店信息 <span id="smProgress" style="font-size:13px;color:#2563eb;font-weight:600"></span></div>
                 <div class="seq-pair" id="smPair"></div>
                 <div class="f"><label>门店名 *</label><input id="smStore" type="text" maxlength="40" placeholder="沃尔玛" autocomplete="off"></div>
                 <div class="f"><label>地址（点下方可快速填入）*</label>
@@ -679,6 +679,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
      * 水印标签：逐张顺序添加（v1.6）第1张=门头 第2张=陈列 自动成组
      * ====================================================== */
     let seq = { phase: 0, door: null, second: null };   // phase: 0=待门头 1=待陈列
+    let seqQueue = [];      // 批量上传队列：按顺序 1门头 2陈列 自动分组
     let lastMeta = null;    // {time, date} 下一组默认沿用上一组
     let seqBusy = false;
     let smTypeVal = 'hezhuang';
@@ -711,7 +712,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         $('#seqHint').textContent = seq.phase===0
             ? '第1张 = 门头照，第2张 = 陈列照（默认盒装），自动成组'
             : '门头已就位，选第2张 → 自动弹填写框';
-        $('#seqAddBtn').textContent = seq.phase===0 ? '➕ 选门头照' : '➕ 选陈列照';
+        $('#seqAddBtn').textContent = seq.phase===0 ? '➕ 加照片（可多选）' : '➕ 补选陈列照（可多选）';
         $('#seqUndoBtn').style.display = seq.phase===1 ? '' : 'none';
     }
     function previewSeqPhoto(file){
@@ -733,26 +734,37 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         return await readAsDataURL(file);
     }
 
-    // 逐张添加入口：第1张→门头槽，第2张→弹填写框
-    $('#seqFileInput').addEventListener('change', async e=>{
-        const f=e.target.files[0]; e.target.value='';
-        if(!f || !(f.type&&f.type.startsWith('image/'))){ toast('请选择图片文件','err'); return; }
-        if(seqBusy) return;
-        toast('读取照片中…');
-        const thumb=await makeThumb(f);
-        if(seq.phase===0){
-            seq.door={ file:f, thumb }; seq.phase=1;
-            renderSeq(); toast('① 门头就位，继续选第2张陈列照','ok');
-        }else{
-            seq.second={ file:f, thumb };
-            renderSeq();
-            openStoreModal();
-        }
+    // 批量/逐张统一入口：按顺序入队，自动 1门头→2陈列 分组，凑齐一家弹一次框
+    $('#seqFileInput').addEventListener('change', e=>{
+        const fs=Array.from(e.target.files).filter(f=>f.type&&f.type.startsWith('image/'));
+        e.target.value='';
+        if(seqBusy){ toast('正在处理中，稍等','err'); return; }
+        if(!fs.length){ toast('没有图片文件','err'); return; }
+        seqQueue.push(...fs);
+        const n=Math.ceil(seqQueue.length/2);
+        toast(`已接收照片，自动按顺序分组（约${n}家），逐家填写…`);
+        pumpQueue();
     });
+    // 队列驱动：phase0 取一张做门头 → phase1 取一张做陈列 → 弹框暂停；确认后继续下一家
+    async function pumpQueue(){
+        while(true){
+            if(!seqQueue.length){ renderSeq(); return; }
+            const f=seqQueue.shift();
+            const thumb=await makeThumb(f);
+            if(seq.phase===0){
+                seq.door={ file:f, thumb }; seq.phase=1;
+            }else{
+                seq.second={ file:f, thumb };
+                renderSeq();
+                openStoreModal();
+                return;
+            }
+        }
+    }
     $('#seqAddBtn').addEventListener('click', ()=>$('#seqFileInput').click());
     $('#seqUndoBtn').addEventListener('click', ()=>{
         if(seq.phase===1 && !$('#seqModal').classList.contains('open')){
-            seq.door=null; seq.phase=0; renderSeq(); toast('已撤销门头照，重新选');
+            seq.door=null; seq.phase=0; seqQueue.length=0; renderSeq(); toast('已撤销门头照，重新选');
         }
     });
 
@@ -760,7 +772,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         renderAddrChips();
         $('#smTime').value = lastMeta ? lastMeta.time : nowHM();
         $('#smDate').value = lastMeta ? lastMeta.date : (dateInput.value || new Date().toISOString().slice(0,10));
-        $('#smPair').innerHTML = `<img src="${seq.door.thumb}" alt="门头"><img src="${seq.second.thumb}" alt="陈列">`;
+        $('#smPair').innerHTML = `<img src="${seq.door.thumb}" alt="门头">${seq.second?`<img src="${seq.second.thumb}" alt="陈列">`:''}`;
+        const remain=Math.ceil(seqQueue.length/2);
+        $('#smProgress').textContent = remain>0 ? `（填完这家还剩 ${remain} 家）` : '';
         $('#smStore').value='';
         $('#smAddr').value='';
         $('#seqModal').classList.add('open');
@@ -774,7 +788,8 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     });
     $('#smCancel').addEventListener('click', ()=>{
         $('#seqModal').classList.remove('open');
-        seq.second=null; renderSeq(); toast('已撤掉第2张，重新选陈列照');
+        seq.second=null; seqQueue.length=0;
+        renderSeq(); toast('已撤掉第2张（批量已中止），重新选陈列照');
     });
     // 手机键盘适配：输入框聚焦时滚到可视区中央
     $('#seqModal').addEventListener('focusin', e=>{
@@ -827,9 +842,10 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             pushAddrHist(addr);
             lastMeta = { time, date };
             seq = { phase: 0, door: null, second: null };
-            renderSeq();
             updateBadge();
             $('#seqModal').classList.remove('open');
+            renderSeq();
+            pumpQueue();   // 批量模式：队列还有照片 → 自动弹下一家
             toast(`✅「${store}」已加水印 → 整理·${SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`,'ok');
         }catch(err){
             toast('加水印失败：'+(err.message||err),'err');
@@ -864,7 +880,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
 
     // 离开页面前：池子还有照片时提醒
     window.addEventListener('beforeunload', e=>{
-        if((seq.door||seq.second) && !seqBusy){ e.preventDefault(); e.returnValue='还有照片没完成整理，确定离开？'; }
+        if((seq.door||seq.second||seqQueue.length) && !seqBusy){ e.preventDefault(); e.returnValue='还有照片没完成整理，确定离开？'; }
     });
 
     /* ========================================================
