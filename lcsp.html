@@ -1223,7 +1223,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
             const a=document.createElement('a');
             a.href=URL.createObjectURL(blob);
-            a.download='LCSP备份-'+new Date().toISOString().slice(0,10)+'.json';
+            const _n=new Date(), _p=x=>String(x).padStart(2,'0'); a.download='LCSP备份-'+_n.getFullYear()+'-'+_p(_n.getMonth()+1)+'-'+_p(_n.getDate())+'-'+_p(_n.getHours())+_p(_n.getMinutes())+'.json';
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(()=>URL.revokeObjectURL(a.href),5000);
             toast('✅ 备份已下载，建议存到文件管理或发微信留底','ok');
