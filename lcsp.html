@@ -315,8 +315,23 @@
 </head>
 <body>
 
+    <!-- 伪装笔记页（每次打开都锁，点暗门才进真工具） -->
+    <div class='decoy open' id='decoyPage'>
+        <div class='decoy-inner'>
+            <div class='decoy-title'>📘 我的<span class='hk' id='decoyKey'>笔记</span></div>
+            <div class='decoy-sub'>随手记 · 自动保存在本机</div>
+            <textarea class='decoy-box' id='decoyNote' placeholder='记点什么…'></textarea>
+            <div class='decoy-list' id='decoyList'>
+                <div class='decoy-item'>买酸奶 2 盒<small>周一</small></div>
+                <div class='decoy-item'>充电线放包侧兜<small>周二</small></div>
+                <div class='decoy-item'>月底缴水费<small>周四</small></div>
+            </div>
+            <div class='decoy-foot' id='decoyFoot'>Note v1.0</div>
+        </div>
+    </div>
+
     <!-- 顶部主标签 -->
-    <nav class="main-tabs">
+    <nav class='main-tabs'>
         <button class="mtab active" id="mtab-wm" type="button">🖊️ 水印</button>
         <button class="mtab" id="mtab-md" type="button">🗂️ 整理<span class="bdg" id="mdBadge">0</span></button>
         <span class="bk-bar">
@@ -871,6 +886,8 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             }else{
                 seq.second=rec;
                 renderSeq();
+
+    // ===== 伪装笔记页（v2.1 隐秘入口）：每次打开都锁 =====
                 openStoreModal();
                 return;
             }
@@ -982,6 +999,34 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     });
 
     renderSeq();
+
+    (function decoyInit(){
+        const page=document.getElementById('decoyPage');
+        const note=document.getElementById('decoyNote');
+        try{ note.value=localStorage.getItem('decoy_note')||''; }catch(e){}
+        let saveT=null;
+        note.addEventListener('input', ()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem('decoy_note', note.value); }catch(e){} },400); });
+        function unlock(){ page.classList.remove('open'); }
+        function relock(){ page.classList.add('open'); window.scrollTo(0,0); }
+        // 暗门1：点标题里的「笔记」两字
+        document.getElementById('decoyKey').addEventListener('click', unlock);
+        // 暗门2：1秒内连点 Note v1.0 三下
+        let taps=0, tapT=0;
+        document.getElementById('decoyFoot').addEventListener('click', ()=>{
+            const now=Date.now();
+            if(now-tapT>1000) taps=0;
+            tapT=now; taps++;
+            if(taps>=3){ taps=0; unlock(); }
+        });
+        // 反向门：真工具里连点「🖊️ 水印」标签三下 → 切回伪装
+        let wtaps=0, wtapT=0;
+        document.getElementById('mtab-wm').addEventListener('click', ()=>{
+            const now=Date.now();
+            if(now-wtapT>1000) wtaps=0;
+            wtapT=now; wtaps++;
+            if(wtaps>=3){ wtaps=0; relock(); }
+        });
+    })();
 
 
 
