@@ -767,7 +767,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
 
     async function makeThumb(file){
         try{
-            const bmp=await createImageBitmap(file);
+            let bmp=null;
+            try{ bmp=await createImageBitmap(file,{resizeWidth:400,resizeQuality:'low'}); }catch(e){}
+            if(!bmp) bmp=await createImageBitmap(file);
             const t=await scaleTo(bmp,400,0.7);
             if(bmp.close) bmp.close();
             if(t) return t;
@@ -789,15 +791,26 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     let ordItems = [];      // [{file, thumb}]
     let ordSel = -1;        // 点选互换：已选索引
     async function openOrderConfirm(fs){
-        toast('读取照片中…');
-        ordItems = [];
-        // 初值按照片时间升序（现场拍隔天传的基本正确；转存的个别乱再手动调）
-        const sorted=[...fs].sort((a,b)=>(a.lastModified||0)-(b.lastModified||0));
-        for(const f of sorted){ ordItems.push({ file:f, thumb:await makeThumb(f) }); }
-        ordSel=-1;
-        renderOrdGrid();
+        ordItems = []; ordSel=-1;
+        // 先弹确认页（处理中逐批冒出），用户能看到进度不死等
         $('#ordModal').classList.add('open');
         window.scrollTo({top:0});
+        renderOrdGrid();
+        // 初值按照片时间升序（现场拍隔天传的基本正确；转存的个别乱再手动调）
+        const sorted=[...fs].sort((a,b)=>(a.lastModified||0)-(b.lastModified||0));
+        let fail=0;
+        for(let i=0;i<sorted.length;i++){
+            toast(`正在读取 ${i+1}/${sorted.length}…`);
+            try{
+                const t=await makeThumb(sorted[i]);
+                if(!t){ fail++; continue; }
+                ordItems.push({ file:sorted[i], thumb:t });
+                if(ordItems.length%3===0) renderOrdGrid();
+            }catch(e){ fail++; }
+        }
+        renderOrdGrid();
+        if(!ordItems.length){ $('#ordModal').classList.remove('open'); toast('照片全部读取失败，换浏览器或减少张数再试','err'); return; }
+        toast(fail ? `✅ 已读取 ${ordItems.length} 张（${fail} 张失败已跳过）` : `✅ 共 ${ordItems.length} 张，确认顺序后开始`,'ok');
     }
     function renderOrdGrid(){
         $('#ordGrid').innerHTML = ordItems.map((it,i)=>`
