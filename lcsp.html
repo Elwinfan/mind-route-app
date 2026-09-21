@@ -762,19 +762,25 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         $('#pvOverlay').classList.add('open');
         $('#pvOverlay').onclick=()=>{ $('#pvOverlay').classList.remove('open'); $('#pvImg').src=''; URL.revokeObjectURL(url); };
     }
-    slotDoor.addEventListener('click', ()=>{ if(seq.door) previewSeqPhoto(seq.door.file); });
-    slotSecond.addEventListener('click', ()=>{ if(seq.second) previewSeqPhoto(seq.second.file); });
+    slotDoor.addEventListener('click', ()=>{ if(seq.door) previewSeqPhoto(seq.door.photo); });
+    slotSecond.addEventListener('click', ()=>{ if(seq.second) previewSeqPhoto(seq.second.photo); });
 
-    async function makeThumb(file){
-        try{
-            let bmp=null;
-            try{ bmp=await createImageBitmap(file,{resizeWidth:400,resizeQuality:'low'}); }catch(e){}
-            if(!bmp) bmp=await createImageBitmap(file);
-            const t=await scaleTo(bmp,400,0.7);
-            if(bmp.close) bmp.close();
-            if(t) return t;
-        }catch(e){}
-        return await readAsDataURL(file);
+    async function makePrepared(file){
+        // 上传即压缩：photo=工作版(长边1920/0.82)，后续水印/预览不再碰原图
+        let bmp=null;
+        try{ bmp=await createImageBitmap(file,{resizeWidth:1920,resizeQuality:'medium'}); }catch(e){}
+        if(!bmp) bmp=await createImageBitmap(file);
+        let w=bmp.width, h=bmp.height;
+        const longSide=Math.max(w,h);
+        if(longSide>EXPORT_MAX_LONG){ const sc=EXPORT_MAX_LONG/longSide; w=Math.round(w*sc); h=Math.round(h*sc); }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const cx=c.getContext('2d');
+        cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality='high';
+        cx.drawImage(bmp,0,0,w,h);
+        const photo=await new Promise(r=>c.toBlob(r,'image/jpeg',EXPORT_QUALITY));
+        const thumb=await scaleTo(c,400,0.7);
+        if(bmp.close) bmp.close();
+        return { photo: photo || file, thumb: thumb || await readAsDataURL(file) };
     }
 
     // 批量/逐张统一入口：按顺序入队，自动 1门头→2陈列 分组，凑齐一家弹一次框
@@ -802,9 +808,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         for(let i=0;i<sorted.length;i++){
             toast(`正在读取 ${i+1}/${sorted.length}…`);
             try{
-                const t=await makeThumb(sorted[i]);
-                if(!t){ fail++; continue; }
-                ordItems.push({ file:sorted[i], thumb:t });
+                const rec=await makePrepared(sorted[i]);
+                if(!rec.thumb){ fail++; continue; }
+                ordItems.push(rec);
                 if(ordItems.length%3===0) renderOrdGrid();
             }catch(e){ fail++; }
         }
@@ -844,7 +850,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     });
     $('#ordStart').addEventListener('click', ()=>{
         if(!ordItems.length){ toast('照片都踢光了','err'); return; }
-        seqQueue = ordItems.map(it=>it.file);
+        seqQueue = ordItems.slice();   // 已含工作版 photo+thumb，直接用
         $('#ordModal').classList.remove('open');
         const n=Math.ceil(seqQueue.length/2);
         toast(`顺序已确认，开始分组（约${n}家），逐家填写…`);
@@ -858,12 +864,12 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     async function pumpQueue(){
         while(true){
             if(!seqQueue.length){ renderSeq(); return; }
-            const f=seqQueue.shift();
-            const thumb=await makeThumb(f);
+            const it=seqQueue.shift();
+            const rec = it.photo ? it : await makePrepared(it);
             if(seq.phase===0){
-                seq.door={ file:f, thumb }; seq.phase=1;
+                seq.door=rec; seq.phase=1;
             }else{
-                seq.second={ file:f, thumb };
+                seq.second=rec;
                 renderSeq();
                 openStoreModal();
                 return;
@@ -892,8 +898,8 @@ function drawLogoText(ctx, canvas, effectiveScale) {
 
     $('#smPair').addEventListener('click', e=>{
         const imgs=e.target.closest('img'); if(!imgs) return;
-        if(seq.door && imgs.src===seq.door.thumb) previewSeqPhoto(seq.door.file);
-        else if(seq.second && imgs.src===seq.second.thumb) previewSeqPhoto(seq.second.file);
+        if(seq.door && imgs.src===seq.door.thumb) previewSeqPhoto(seq.door.photo);
+        else if(seq.second && imgs.src===seq.second.thumb) previewSeqPhoto(seq.second.photo);
     });
     $('#smType').addEventListener('click', e=>{
         const b=e.target.closest('button'); if(!b) return;
@@ -940,7 +946,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             for(let k=0;k<pair.length;k++){
                 const p=pair[k]; if(!p) continue;
                 const photoTime = (k===1) ? addMinutes(time, gapMin) : time;
-                const bmp=await createImageBitmap(p.file);
+                const bmp=await createImageBitmap(p.photo);
                 let w=bmp.width, h=bmp.height;
                 const longSide=Math.max(w,h);
                 if(longSide>EXPORT_MAX_LONG){ const sc=EXPORT_MAX_LONG/longSide; w=Math.round(w*sc); h=Math.round(h*sc); }
@@ -953,7 +959,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
                 const full=await readAsDataURL(fullBlob);
                 const thumb=await scaleTo(c,400,0.7);
                 if(bmp.close) bmp.close();
-                photos.push({ thumb:thumb||full, full, name:(p.file.name||'photo').replace(/\.[^.]+$/,'')+'.jpg' });
+                photos.push({ thumb:thumb||full, full, name:((p.file&&p.file.name)||'photo').replace(/\.[^.]+$/,'')+'.jpg' });
             }
             if(!photos.length) throw new Error('没有处理成功的照片');
 
