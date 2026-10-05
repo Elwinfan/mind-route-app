@@ -131,7 +131,7 @@
         .add:active { background: #f1f5f9; }
 
         /* ==================== 底部目标进度条 ==================== */
-        .goalbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 16px; }
+        .goalbar { position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 10px 14px calc(10px); display: flex; gap: 16px; }
         .goalbar .g { flex: 1; min-width: 0; }
         .goalbar .gt-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
         .goalbar .gt-top .gnum { color: #64748b; font-weight: 700; }
@@ -139,7 +139,7 @@
         .goalbar .track { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
         .goalbar .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #16a34a); border-radius: 4px; transition: width .3s; }
         .goalbar .fill.done { background: #16a34a; }
-        body { padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important; }
+        body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
 
         /* ==================== toast ==================== */
         .toast { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: rgba(15,23,42,.92); color: #fff; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: .25s; z-index: 100000; max-width: 88vw; white-space: pre-line; font-size: 13px; text-align: center; }
@@ -195,6 +195,75 @@
         .exp-menu .ec { background: #f1f5f9; color: #64748b; }
         .exp-menu button:active { transform: scale(.98); }
         .exp-menu small { display: block; font-size: 11px; font-weight: 500; opacity: .85; margin-top: 2px; }
+
+        /* ==================== 顶层标签栏（照片库/整理，底部） ==================== */
+        .main-tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 60; display: flex; gap: 4px; background: rgba(255,255,255,.95); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 -1px 0 rgba(15,23,42,.09); padding: 7px 10px calc(7px + env(safe-area-inset-bottom, 0px)); }
+        .main-tabs .mtab { flex: 1; padding: 11px 2px; border: none; background: none; font-size: 14px; font-weight: 600; color: #94a3b8; cursor: pointer; border-radius: 12px; white-space: nowrap; }
+        .main-tabs .mtab.active { color: #2563eb; background: #eff6ff; font-weight: 700; }
+        .main-tabs .bk-bar { flex: 0 0 auto; display: flex; align-items: center; padding: 0 8px; gap: 6px; }
+        .main-tabs .bk-btn { width: 34px; height: 34px; border: none; border-radius: 10px; background: #f1f5f9; font-size: 16px; cursor: pointer; }
+        .main-panel { display: none; }
+        .main-panel.active { display: block; }
+        .goalbar-wrap.fortab { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
+
+        /* ==================== 照片库 ==================== */
+        .lib-wrap { max-width: 760px; margin: 0 auto; padding: 12px 12px 100px; }
+        .lib-import { width: 100%; padding: 15px; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; color: #fff; background: #2563eb; margin-bottom: 14px; }
+        .lib-mini { font-size: 12px; color: #a3adb8; margin: -6px 2px 14px; }
+        .lib-empty { text-align: center; color: #94a3b8; font-size: 14px; padding: 40px 20px; line-height: 2; }
+        .lib-batch { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+        .lib-batch-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; }
+        .lib-batch-title { flex: 1; font-size: 14px; font-weight: 700; color: #334155; cursor: text; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lib-batch-title input { width: 100%; font-size: 14px; font-weight: 700; border: 1.5px solid #93c5fd; border-radius: 6px; padding: 3px 6px; }
+        .lib-batch-meta { font-size: 11px; color: #94a3b8; flex-shrink: 0; }
+        .lib-batch-del { border: none; background: #fee2e2; color: #dc2626; border-radius: 7px; padding: 5px 8px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+        .lib-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; }
+        .lib-cell { position: relative; border-radius: 8px; overflow: hidden; background: #f1f5f9; aspect-ratio: 1; }
+        .lib-cell img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+        .lib-cell .idx { position: absolute; top: 3px; left: 5px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+        .lib-cell .ck { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: rgba(15,23,42,.25); }
+        .lib-cell.sel .ck { background: #2563eb; border-color: #fff; }
+        .lib-cell.sel .ck::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+        .lib-cell .used-bdg { position: absolute; right: 4px; bottom: 4px; background: #16a34a; color: #fff; font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 5px; }
+        .lib-cell.used img { opacity: .78; }
+        .lib-bar { position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); background: rgba(15,23,42,.96); color: #fff; display: none; align-items: center; gap: 8px; padding: 10px 12px; z-index: 9000; border-radius: 14px 14px 0 0; }
+        .lib-bar.show { display: flex; }
+        .lib-bar .cnt { font-size: 13px; font-weight: 700; flex: 1; }
+        .lib-bar button { padding: 9px 14px; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .lib-bar .b1 { background: #2563eb; color: #fff; }
+        .lib-bar .b2 { background: #ef4444; color: #fff; }
+        .lib-bar .lb-btn.off { background: #475569; color: #fff; border: none; width: 34px; height: 34px; border-radius: 9px; font-size: 15px; cursor: pointer; }
+        .lib-modal { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; z-index: 9500; overflow-y: auto; padding: 5vh 16px 45vh; }
+        .lib-modal.open { display: block; }
+        .lib-modal-card { background: #fff; border-radius: 20px; padding: 20px 18px; width: 100%; max-width: 400px; margin: 0 auto; box-shadow: 0 24px 64px rgba(15,23,42,.28); }
+        .lib-modal-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 14px; }
+        .lib-modal-card .f { margin-bottom: 14px; }
+        .lib-modal-card .f label { display: block; font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .lib-modal-card select { width: 100%; box-sizing: border-box; padding: 13px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 17px; min-height: 50px; background: #fff; }
+        .lib-modal-card select:focus { outline: none; border-color: #2563eb; }
+        .lib-modal-actions { display: flex; gap: 10px; }
+        .lib-modal-actions button { flex: 1; padding: 13px; border: none; border-radius: 11px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .lib-modal-actions .go { background: #2563eb; color: #fff; }
+        .lib-modal-actions .clr { background: #f1f5f9; color: #64748b; }
+
+        /* 放大层（双指缩放/拖动/双击） */
+        .pv-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 99999; display: none; align-items: center; justify-content: center; cursor: zoom-out; touch-action: none; flex-direction: column; }
+        .pv-overlay.open { display: flex; }
+        .pv-overlay img { max-width: 96vw; max-height: 74vh; object-fit: contain; border-radius: 6px; will-change: transform; cursor: grab; }
+        .pv-overlay img:active { cursor: grabbing; }
+        .pv-used-tag { margin-top: 14px; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .pv-used-tag .tag { background: #16a34a; color: #fff; font-size: 13px; font-weight: 700; border-radius: 8px; padding: 7px 12px; }
+        .pv-used-tag button { border: none; background: rgba(255,255,255,.16); color: #fff; font-size: 13px; font-weight: 700; border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+
+        /* 店卡素材行（照片库送整理的照片，带已用标记） */
+        .phead { margin: 16px 2px 12px; }
+        .phead-t { font-size: 21px; font-weight: 800; color: #0b1220; letter-spacing: -.01em; line-height: 1.25; }
+        .phead-s { font-size: 13px; color: #7c8aa0; margin-top: 3px; font-weight: 500; }
+        .mat-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 2px 2px; border-top: 1px dashed #e2e8f0; margin-top: 8px; }
+        .mat-cell { position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden; background: #f1f5f9; }
+        .mat-cell img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
+        .mat-cell .mused { position: absolute; right: 2px; bottom: 2px; background: #16a34a; color: #fff; font-size: 9px; font-weight: 800; border-radius: 5px; padding: 1px 4px; }
+        .mat-cell .mx { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border: none; border-radius: 50%; background: rgba(15,23,42,.65); color: #fff; font-size: 11px; cursor: pointer; padding: 0; }
     </style>
 </head>
 <body>
@@ -275,8 +344,66 @@
             <button class="guide-btn" id="helpCloseBtn" type="button">关闭</button>
         </div>
     </div>
+<!-- ============ 底部标签栏（照片库/整理 + 备份） ============ -->
+    <nav class="main-tabs">
+        <button class="mtab" id="mtab-lib" type="button">📷 照片库</button>
+        <button class="mtab active" id="mtab-md" type="button">🗂️ 整理</button>
+        <span class="bk-bar">
+            <button class="bk-btn" id="bkSave" type="button" title="备份：导出全部数据（照片库+门店）">💾</button>
+            <button class="bk-btn" id="bkLoad" type="button" title="恢复：从备份文件还原">↩️</button>
+        </span>
+        <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    </nav>
+
+<!-- ============ 照片库面板：多选导入·批次分组·勾选送整理·已用标记 ============ -->
+        <section id="lib-panel" class="main-panel">
+            <div class="lib-wrap">
+                <div class="phead">
+                    <div class="phead-t">📷 照片库</div>
+                    <div class="phead-s" id="libStat">还没有照片，导入后长期保存</div>
+                </div>
+                <button class="lib-import" id="libImportBtn" type="button">➕ 导入照片</button>
+                <div class="lib-mini">导入自动压缩 · 勾选后送整理（自动标记已用）</div>
+                <input type="file" id="libFileInput" accept="image/*" multiple hidden>
+                <div id="libList"></div>
+                <div class="lib-empty" id="libEmpty">库里还没照片，点上面 ➕ 导入<br><small>照片自动压缩到长边1600px；💾备份含照片库</small></div>
+            </div>
+        </section>
+
+        <!-- 照片库送整理：两步选（分类→门店） -->
+        <div class="lib-modal" id="libStoreModal">
+            <div class="lib-modal-card">
+                <div class="lib-modal-title">送到哪家门店？</div>
+                <div class="f"><label>分类 *</label>
+                    <select id="libTabSel"><option value="zhuti">主题堆</option><option value="hezhuang">盒装陈列</option></select>
+                </div>
+                <div class="f"><label>门店 *</label><select id="libStoreSel" class="lib-sel"></select></div>
+                <div class="lib-modal-actions">
+                    <button class="go" id="libStoreOk" type="button">✅ 送去 + 标记已用</button>
+                    <button class="clr" id="libStoreCancel" type="button">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 照片库勾选操作栏 -->
+        <div class="lib-bar" id="libBar">
+            <span class="cnt" id="libCnt">已选 0 张</span>
+            <button class="b1" id="libSendBtn" type="button">➡️ 送整理</button>
+            <button class="b2" id="libDelBtn" type="button">🗑️ 删除</button>
+            <button class="lb-btn off" id="libClear" type="button">✕</button>
+        </div>
+
+        <!-- 放大层（双指缩放/拖动/双击 + 已用标记） -->
+        <div class="pv-overlay" id="pvOverlay">
+            <img id="pvImg" alt="">
+            <div class="pv-used-tag" id="pvUsedTag" style="display:none">
+                <span class="tag" id="pvUsedTxt"></span>
+                <button id="pvUsedBtn" type="button">取消标记</button>
+            </div>
+        </div>
+
 <!-- ============ 门店整理面板 ============ -->
-        <section id="store-panel" class="top-panel active">
+        <section id="store-panel" class="top-panel main-panel active">
             <div class="topbar">
                 <div class="row2">
                     <div class="f"><label>业务员名字</label><input id="nameInput" type="text" placeholder="张三" maxlength="40"></div>
@@ -388,6 +515,12 @@
 
     function cardHTML(tab, s){
         const lab = SECOND_LABEL[tab];
+        const mats = Array.isArray(s.materials) && s.materials.length
+            ? `<div class="mat-row">${s.materials.map((m,i)=>{
+                const d=m.usedAt?new Date(m.usedAt):null;
+                const ds=d?`${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';
+                return `<div class="mat-cell" data-mi="${i}"><img src="${m.thumb}" alt="" loading="lazy">${ds?`<span class="mused">✓${ds}</span>`:''}<button class="mx" type="button">✕</button></div>`;
+            }).join('')}</div>` : '';
         return `<div class="card store-card" data-id="${s.id}">
             <div class="card-head">
                 <span class="num"></span>
@@ -404,6 +537,7 @@
                     <span class="tag">${lab}</span><button class="x" type="button">✕</button>
                 </div>
             </div>
+            ${mats}
         </div>`;
     }
     function renderList(tab){
@@ -464,6 +598,10 @@
         list.addEventListener('click', e=>{
             const card=e.target.closest('.store-card'); if(!card) return;
             const id=+card.dataset.id; const s=findStore(tab,id);
+            const mx=e.target.closest('.mx');
+            if(mx && s){ const mi=+mx.closest('.mat-cell').dataset.mi; if(s.materials && s.materials[mi]){ s.materials.splice(mi,1); renderList(tab); scheduleSave(); } return; }
+            const mc=e.target.closest('.mat-cell');
+            if(mc && s){ const m=(s.materials||[])[+mc.dataset.mi]; if(m){ openPv(m.full); } return; }
             const x=e.target.closest('.x');
             if(x){ const type=x.closest('.slot').dataset.type; if(s) s[type]=null; updateSlot(card,type,null); scheduleSave(); return; }
             const del=e.target.closest('.del');
@@ -611,15 +749,417 @@
         finally{ exportBtn.disabled=false; exportBtn.textContent=old; }
     }
 
-    // IndexedDB 持久化
+    // IndexedDB 持久化（v2：+libPhotos/libBatches 照片库独立store，旧kv数据不动）
     let _db;
-    function db(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('mendianzip4',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>{_db=r.result;res(_db);}; r.onerror=()=>rej(r.error); }); }
+    function db(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('mendianzip4',2); r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); if(!d.objectStoreNames.contains('libPhotos')) d.createObjectStore('libPhotos',{keyPath:'id'}); if(!d.objectStoreNames.contains('libBatches')) d.createObjectStore('libBatches',{keyPath:'id'}); }; r.onsuccess=()=>{_db=r.result;res(_db);}; r.onerror=()=>rej(r.error); }); }
     async function idbPut(v){ try{ const d=await db(); await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite'); t.objectStore('kv').put(v,'cur'); t.oncomplete=res; t.onerror=()=>rej(t.error);}); }catch(e){} }
     async function idbGet(){ try{ const d=await db(); return await new Promise(res=>{const t=d.transaction('kv','readonly'); const q=t.objectStore('kv').get('cur'); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null);}); }catch(e){ return null; } }
     function serialize(){ return { name:nameInput.value, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang }; }
     let saveTimer; let saving=false;
     function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,800); }
     async function doSave(){ if(saving){ scheduleSave(); return; } saving=true; try{ await idbPut(serialize()); }catch(e){} finally{ saving=false; } }
+
+    // ========================================================
+    // 顶层标签切换（照片库 / 整理）
+    // ======================================================
+    let curMain = 'md';
+    const MAIN_TABS = ['lib','md'];
+    function switchMainTab(m){
+        curMain = m;
+        MAIN_TABS.forEach(k=>{
+            md$('#mtab-'+k).classList.toggle('active', m===k);
+            const p=document.getElementById(k==='lib'?'lib-panel':'store-panel');
+            p.classList.toggle('active', m===k);
+        });
+        if(m!=='lib'){ libSel.clear(); libBarUpdate(); document.getElementById('libBar').classList.remove('show'); }
+        window.scrollTo({top:0});
+    }
+    MAIN_TABS.forEach(k=> md$('#mtab-'+k).addEventListener('click', ()=>switchMainTab(k)) );
+
+    // ========================================================
+    // 照片库（多选导入·批次分组·放大·勾选送整理·已用标记）
+    // ======================================================
+    const LIB_LONG = 1600;
+    let libPhotos = [];   // [{id,batchId,thumb,full,name,usedAt,at}]
+    let libBatches = [];  // [{id,title,at}]
+    const libSel = new Set();
+    function libUid(){ return Date.now().toString(36)+Math.random().toString(16).slice(2,8); }
+    function fmtMD(iso){ const d=iso?new Date(iso):null; return d?`${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` : ''; }
+
+    // 解码三级降级链（防真机挂死）
+    function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]); }
+    async function decodeViaImg(file){
+        const url=URL.createObjectURL(file);
+        try{
+            return await withTimeout(new Promise((res,rej)=>{
+                const im=new Image();
+                im.onload=()=>res(im);
+                im.onerror=()=>rej(new Error('img decode fail'));
+                im.src=url;
+            }), 25000);
+        }finally{ setTimeout(()=>URL.revokeObjectURL(url), 60000); }
+    }
+    async function decodeBitmap(file, target){
+        try{ return await withTimeout(createImageBitmap(file, {resizeWidth:target, resizeQuality:'medium'}), 20000); }
+        catch(e){}
+        try{ return await withTimeout(createImageBitmap(file), 20000); }
+        catch(e){}
+        const im=await decodeViaImg(file);
+        const c=document.createElement('canvas');
+        const sc=Math.min(1, target/Math.max(im.naturalWidth, im.naturalHeight));
+        c.width=Math.round(im.naturalWidth*sc); c.height=Math.round(im.naturalHeight*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        return c;
+    }
+    function canvasToDataURL(c, q){ try{ const d=c.toDataURL('image/jpeg', q); if(d && d.length>100) return d; }catch(e){} try{ return c.toDataURL('image/jpeg', 0.6); }catch(e){ return null; } }
+
+    // lib store 读写
+    async function libPut(store, obj){ try{ const d=await db(); await new Promise((res,rej)=>{ const t=d.transaction(store,'readwrite'); t.objectStore(store).put(obj); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
+    async function libDelMany(store, keys){ try{ const d=await db(); await new Promise((res,rej)=>{ const t=d.transaction(store,'readwrite'); const os=t.objectStore(store); keys.forEach(k=>os.delete(k)); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
+    async function libLoad(){
+        try{
+            const d=await db();
+            libBatches=await new Promise(res=>{ const t=d.transaction('libBatches','readonly'); const q=t.objectStore('libBatches').getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]); });
+            libPhotos=await new Promise(res=>{ const t=d.transaction('libPhotos','readonly'); const q=t.objectStore('libPhotos').getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]); });
+        }catch(e){}
+        libRender();
+    }
+
+    // 导入
+    md$('#libImportBtn').addEventListener('click', ()=> md$('#libFileInput').click() );
+    md$('#libFileInput').addEventListener('change', async e=>{
+        const fs=Array.from(e.target.files).filter(f=>f.type && f.type.startsWith('image/'));
+        e.target.value='';
+        if(!fs.length){ toast('没有图片文件','err'); return; }
+        const btn=md$('#libImportBtn'); const old=btn.textContent; btn.disabled=true;
+        const bid=libUid();
+        const d=new Date();
+        const title=`${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        libBatches.push({ id:bid, title, at:d.toISOString() });
+        let okCnt=0;
+        try{
+            for(let i=0;i<fs.length;i++){
+                btn.textContent=`⏳ 压缩 ${i+1}/${fs.length}…`;
+                try{
+                    const bmp=await decodeBitmap(fs[i], LIB_LONG);
+                    const sc=Math.min(1, LIB_LONG/Math.max(bmp.width,bmp.height));
+                    const w=Math.round(bmp.width*sc), h=Math.round(bmp.height*sc);
+                    const c=document.createElement('canvas'); c.width=w; c.height=h;
+                    c.getContext('2d').drawImage(bmp,0,0,w,h);
+                    if(bmp.close) bmp.close();
+                    const full=await canvasToDataURL(c, 0.78);
+                    if(!full) continue;
+                    const tc=document.createElement('canvas');
+                    const tsc=Math.min(1, 400/Math.max(w,h));
+                    tc.width=Math.round(w*tsc); tc.height=Math.round(h*tsc);
+                    tc.getContext('2d').drawImage(c,0,0,tc.width,tc.height);
+                    const thumb=await canvasToDataURL(tc, 0.7);
+                    const p={ id:libUid(), batchId:bid, full, thumb:thumb||full, name:(fs[i].name||'photo').replace(/\.[^.]+$/,'')+'.jpg', usedAt:null, at:new Date().toISOString() };
+                    libPhotos.push(p); await libPut('libPhotos', p); okCnt++;
+                }catch(err){ /* 单张失败跳过 */ }
+            }
+            if(okCnt){ await libPut('libBatches', libBatches.find(b=>b.id===bid)); libRender(); toast(`✅ 已导入 ${okCnt} 张（自动压缩）`,'ok'); switchMainTab('lib'); }
+            else{ libBatches=libBatches.filter(b=>b.id!==bid); toast('照片全部读取失败','err'); }
+        }finally{ btn.disabled=false; btn.textContent=old; }
+    });
+
+    // 渲染（含批次头已用统计）
+    function libRender(){
+        const st=md$('#libStat');
+        if(st) st.textContent = libPhotos.length ? `共 ${libPhotos.length} 张 · ${libBatches.length} 个批次 · 已用 ${libPhotos.filter(p=>p.usedAt).length} 张` : '还没有照片，导入后长期保存';
+        const listEl=md$('#libList');
+        const batches=[...libBatches].sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+        if(!batches.length || !libPhotos.length){
+            listEl.innerHTML='';
+            md$('#libEmpty').style.display = libPhotos.length ? 'none' : 'block';
+            libBarUpdate(); return;
+        }
+        md$('#libEmpty').style.display='none';
+        listEl.innerHTML = batches.map(b=>{
+            const ps=libPhotos.filter(p=>p.batchId===b.id).sort((a,b2)=>String(a.at).localeCompare(String(b2.at)));
+            if(!ps.length) return '';
+            const used=ps.filter(p=>p.usedAt).length;
+            return `<div class="lib-batch" data-bid="${b.id}">
+                <div class="lib-batch-head">
+                    <span class="lib-batch-title" data-bid="${b.id}" title="点一下改名">${esc(b.title)}</span>
+                    <span class="lib-batch-meta">${ps.length}张${used?` · 已用${used}`:''}</span>
+                    <button class="lib-batch-del" data-bid="${b.id}" type="button">删批次</button>
+                </div>
+                <div class="lib-grid">
+                    ${ps.map((p,i)=>`<div class="lib-cell${libSel.has(p.id)?' sel':''}${p.usedAt?' used':''}" data-pid="${p.id}">
+                        <img src="${p.thumb}" alt="" loading="lazy">
+                        <span class="idx">${i+1}</span>
+                        <span class="ck"></span>
+                        ${p.usedAt?`<span class="used-bdg">✓${fmtMD(p.usedAt)}</span>`:''}
+                    </div>`).join('')}
+                </div>
+            </div>`;
+        }).join('');
+        libBarUpdate();
+    }
+    function libBarUpdate(){
+        md$('#libCnt').textContent=`已选 ${libSel.size} 张`;
+        md$('#libBar').classList.toggle('show', libSel.size>0);
+    }
+
+    // 批次：改名 / 删批次 / 点图放大 / 勾选
+    md$('#libList').addEventListener('click', async e=>{
+        const del=e.target.closest('.lib-batch-del');
+        if(del){
+            const bid=del.dataset.bid;
+            const ps=libPhotos.filter(p=>p.batchId===bid);
+            if(!ps.length) return;
+            if(!confirm('删除该批次（'+ps.length+'张）？不可恢复。')) return;
+            await libDelMany('libPhotos', ps.map(p=>p.id));
+            await libDelMany('libBatches', [bid]);
+            ps.forEach(p=>libSel.delete(p.id));
+            libPhotos=libPhotos.filter(p=>p.batchId!==bid);
+            libBatches=libBatches.filter(b=>b.id!==bid);
+            libRender(); toast('已删批次','ok'); return;
+        }
+        const title=e.target.closest('.lib-batch-title');
+        if(title){
+            const bid=title.dataset.bid;
+            const b=libBatches.find(x=>x.id===bid); if(!b) return;
+            const cur=b.title;
+            title.innerHTML=`<input type="text" maxlength="24" value="${esc(cur)}">`;
+            const inp=title.querySelector('input'); inp.focus(); inp.select();
+            const commit=async ()=>{
+                const v=inp.value.trim();
+                b.title=v||cur;
+                title.textContent=b.title;
+                await libPut('libBatches', b);
+            };
+            inp.addEventListener('blur', commit);
+            inp.addEventListener('keydown', ev=>{ if(ev.key==='Enter') inp.blur(); });
+            return;
+        }
+        const cell=e.target.closest('.lib-cell');
+        if(cell){
+            const pid=cell.dataset.pid;
+            if(cell.classList.contains('sel') || e.target.classList.contains('ck')){
+                if(libSel.has(pid)) libSel.delete(pid); else libSel.add(pid);
+                cell.classList.toggle('sel', libSel.has(pid));
+                libBarUpdate(); return;
+            }
+            const p=libPhotos.find(x=>x.id===pid); if(!p) return;
+            openPv(p.full, p);
+        }
+    });
+    md$('#libClear').addEventListener('click', ()=>{ libSel.clear(); document.querySelectorAll('.lib-cell.sel').forEach(c=>c.classList.remove('sel')); libBarUpdate(); });
+    md$('#libDelBtn').addEventListener('click', async ()=>{
+        if(!libSel.size) return;
+        if(!confirm('删除已选 '+libSel.size+' 张？不可恢复。')) return;
+        await libDelMany('libPhotos', [...libSel]);
+        libPhotos=libPhotos.filter(p=>!libSel.has(p.id));
+        libSel.clear(); libRender(); toast('已删除','ok');
+    });
+
+    // 放大层（双指缩放/拖动/双击 + 已用标记操作；fromLib=true 时显示标记按钮）
+    let pvCurPhoto = null;
+    function openPv(src, photo){
+        pvCurPhoto = photo || null;
+        md$('#pvImg').src = src;
+        const tag=md$('#pvUsedTag');
+        if(photo){
+            tag.style.display='flex';
+            const upd=()=>{
+                if(photo.usedAt){ md$('#pvUsedTxt').textContent='已用 · '+fmtMD(photo.usedAt); md$('#pvUsedBtn').textContent='取消标记'; }
+                else{ md$('#pvUsedTxt').textContent='还没用过'; md$('#pvUsedBtn').textContent='标记已用'; }
+            };
+            upd();
+            md$('#pvUsedBtn').onclick=async ()=>{
+                photo.usedAt = photo.usedAt ? null : new Date().toISOString();
+                await libPut('libPhotos', photo);
+                upd(); libRender();
+                toast(photo.usedAt?('✓ 已标记 '+fmtMD(photo.usedAt)):'已取消标记','ok');
+            };
+        }else{
+            tag.style.display='none';
+            md$('#pvUsedBtn').onclick=null;
+        }
+        md$('#pvOverlay').classList.add('open');
+    }
+    md$('#pvOverlay').addEventListener('click', e=>{
+        if(e.target.closest('#pvUsedBtn')) return;
+        if(e.target.closest('.pv-used-tag')) return;
+        closePv();
+    });
+    function closePv(){ md$('#pvOverlay').classList.remove('open'); md$('#pvImg').src=''; pvCurPhoto=null; }
+    // 缩放手势
+    (function(){
+        const ov=document.getElementById('pvOverlay'), img=document.getElementById('pvImg');
+        let scale=1, tx=0, ty=0, st=null, mst=null, lastTap=0, suppressClick=false;
+        function apply(anim){
+            img.style.transition=anim?'transform .18s ease':'none';
+            img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+        }
+        function reset(){ scale=1; tx=0; ty=0; apply(true); }
+        function clampPan(){
+            const mx=Math.max(0,(scale-1)*innerWidth/2), my=Math.max(0,(scale-1)*innerHeight/2);
+            tx=Math.max(-mx,Math.min(mx,tx)); ty=Math.max(-my,Math.min(my,ty));
+        }
+        function anchorZoom(ns, cx, cy){
+            const k=ns/scale, ax=cx-innerWidth/2, ay=cy-innerHeight/2;
+            tx=ax-(ax-tx)*k; ty=ay-(ay-ty)*k; scale=ns; clampPan(); apply(false);
+        }
+        img.addEventListener('load', reset);
+        ov.addEventListener('touchstart', e=>{
+            if(e.touches.length>=2){
+                const a=e.touches[0], b=e.touches[1];
+                st={m:'z', d0:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY), s0:scale, moved:10};
+            }else{
+                const t=e.touches[0];
+                st={m:'p', x:t.clientX, y:t.clientY, tx0:tx, ty0:ty, moved:0};
+            }
+        }, {passive:true});
+        ov.addEventListener('touchmove', e=>{
+            if(!st) return; e.preventDefault();
+            if(st.m==='z' && e.touches.length>=2){
+                const a=e.touches[0], b=e.touches[1];
+                const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+                const ns=Math.max(1, Math.min(8, st.s0*d/st.d0));
+                anchorZoom(ns, (a.clientX+b.clientX)/2, (a.clientY+b.clientY)/2);
+            }else if(st.m==='p'){
+                const t=e.touches[0];
+                const dx=t.clientX-st.x, dy=t.clientY-st.y;
+                st.moved=Math.max(st.moved, Math.hypot(dx,dy));
+                if(scale>1){ tx=st.tx0+dx; ty=st.ty0+dy; clampPan(); apply(false); }
+            }
+        }, {passive:false});
+        let clickTimer=null;
+        ov.addEventListener('touchend', e=>{
+            if(!st) return;
+            const wasTap = st.m==='p' && st.moved<=10;
+            if(st.moved>10) suppressClick=true;
+            if(e.touches.length===0){
+                if(st.m==='z' && scale<1.06) reset();
+                else if(scale>1) apply(true);
+                st=null;
+                if(wasTap){
+                    const now=Date.now(), t=e.changedTouches[0];
+                    if(now-lastTap<320){
+                        lastTap=0; suppressClick=true;
+                        if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; }
+                        if(scale>1) reset(); else anchorZoom(2.5, t.clientX, t.clientY);
+                    }else lastTap=now;
+                }
+            }else if(e.touches.length===1 && st.m==='z'){
+                const t=e.touches[0];
+                st={m:'p', x:t.clientX, y:t.clientY, tx0:tx, ty0:ty, moved:10};
+            }
+        });
+        img.addEventListener('mousedown', e=>{ if(scale>1){ mst={x:e.clientX,y:e.clientY,tx0:tx,ty0:ty,moved:0}; e.preventDefault(); } });
+        ov.addEventListener('mousemove', e=>{
+            if(!mst) return;
+            const dx=e.clientX-mst.x, dy=e.clientY-mst.y;
+            mst.moved=Math.max(mst.moved, Math.hypot(dx,dy));
+            tx=mst.tx0+dx; ty=mst.ty0+dy; clampPan(); apply(false);
+        });
+        ov.addEventListener('mouseup', ()=>{ if(mst && mst.moved>10) suppressClick=true; mst=null; });
+        ov.addEventListener('wheel', e=>{
+            e.preventDefault();
+            const ns=Math.max(1, Math.min(8, scale*(e.deltaY<0?1.18:1/1.18)));
+            if(ns===1){ reset(); return; }
+            anchorZoom(ns, e.clientX, e.clientY);
+        }, {passive:false});
+        ov.addEventListener('click', e=>{
+            if(e.target.closest && e.target.closest('#pvUsedBtn')) return;
+            if(e.target.closest && e.target.closest('.pv-used-tag')) return;
+            e.stopPropagation(); e.preventDefault();
+            if(suppressClick){ suppressClick=false; return; }
+            if(clickTimer){
+                clearTimeout(clickTimer); clickTimer=null;
+                if(scale>1) reset(); else anchorZoom(2.5, e.clientX, e.clientY);
+            }else{
+                clickTimer=setTimeout(()=>{ clickTimer=null; if(scale<=1) closePv(); }, 280);
+            }
+        }, true);
+    })();
+
+    // 送整理（两步：分类 → 门店）+ 自动标记已用
+    md$('#libSendBtn').addEventListener('click', ()=>{
+        if(!libSel.size) return;
+        const tsel=md$('#libTabSel'), ssel=md$('#libStoreSel');
+        tsel.value='zhuti';
+        const fill=()=>{
+            const tab=tsel.value;
+            const stores=mdData[tab].filter(s=>s.store && s.store.trim());
+            ssel.innerHTML = stores.length
+                ? stores.map(s=>`<option value="${s.id}">${esc(s.store.trim())}</option>`).join('')
+                : `<option value="">（${tab==='zhuti'?'主题堆':'盒装'}还没有填名字的门店，先去整理起名）</option>`;
+        };
+        fill();
+        tsel.onchange=fill;
+        md$('#libStoreModal').classList.add('open');
+    });
+    md$('#libStoreCancel').addEventListener('click', ()=> md$('#libStoreModal').classList.remove('open'));
+    md$('#libStoreOk').addEventListener('click', async ()=>{
+        const tab=md$('#libTabSel').value;
+        const sid=md$('#libStoreSel').value;
+        if(!sid){ toast('该分类还没有门店，先去整理标签起名','err'); return; }
+        const s=mdData[tab].find(x=>x.id===+sid);
+        if(!s){ toast('门店不存在','err'); return; }
+        const now=new Date().toISOString();
+        if(!Array.isArray(s.materials)) s.materials=[];
+        let n=0;
+        for(const pid of libSel){
+            const p=libPhotos.find(x=>x.id===pid); if(!p) continue;
+            s.materials.push({ thumb:p.thumb, full:p.full, name:p.name, usedAt:now });
+            if(!p.usedAt){ p.usedAt=now; await libPut('libPhotos', p); }
+            n++;
+        }
+        libSel.clear();
+        md$('#libStoreModal').classList.remove('open');
+        scheduleSave(); libRender(); renderList(tab);
+        toast(`✅ 已送 ${n} 张到「${esc(s.store.trim())}」素材行，并标记已用`,'ok');
+        switchMainTab('md');
+        if(curTab!==tab) switchTab(tab);
+    });
+
+    // ========================================================
+    // 备份 / 恢复（含照片库）
+    // ======================================================
+    md$('#bkSave').addEventListener('click', async ()=>{
+        try{
+            const data={ app:'lczp', ver:2, at:new Date().toISOString(), main:serialize(), lib:{ photos:libPhotos, batches:libBatches } };
+            const blob=new Blob([JSON.stringify(data)], {type:'application/json'});
+            const d=new Date();
+            const fn=`力诚整理备份_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+            const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn;
+            document.body.appendChild(a); a.click(); a.remove();
+            toast('✅ 备份已导出（含照片库 '+libPhotos.length+' 张）','ok');
+        }catch(e){ toast('备份失败','err'); }
+    });
+    md$('#bkLoad').addEventListener('click', ()=> md$('#bkFile').click());
+    md$('#bkFile').addEventListener('change', async e=>{
+        const f=e.target.files[0]; e.target.value='';
+        if(!f) return;
+        try{
+            const data=JSON.parse(await f.text());
+            if(!data || data.app!=='lczp' || !data.main){ toast('不是本页的备份文件','err'); return; }
+            if(!confirm('恢复备份？当前门店和照片库数据将被覆盖。')) return;
+            const m=data.main;
+            mdData.zhuti=(m.zhuti||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
+            mdData.hezhuang=(m.hezhuang||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
+            mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), 0)+1;
+            nameInput.value=m.name||'';
+            renderList('zhuti'); renderList('hezhuang');
+            await idbPut(serialize());
+            if(data.lib && Array.isArray(data.lib.photos)){
+                await libDelMany('libPhotos', libPhotos.map(p=>p.id));
+                await libDelMany('libBatches', libBatches.map(b=>b.id));
+                for(const p of data.lib.photos) await libPut('libPhotos', p);
+                for(const b of (data.lib.batches||[])) await libPut('libBatches', b);
+                libPhotos=data.lib.photos; libBatches=data.lib.batches||[];
+                libRender();
+            }
+            toast('✅ 已恢复（照片库 '+libPhotos.length+' 张）','ok');
+        }catch(err){ toast('备份文件读取失败','err'); }
+    });
+
+    // 照片库初始加载
+    libLoad();
 
     // 初始化：同步先出第一家
     (function initNow(){
