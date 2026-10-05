@@ -1374,7 +1374,12 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         c.getContext('2d').drawImage(im,0,0,c.width,c.height);
         return c;
     }
-    function canvasToDataURL(c, q){ try{ const d=c.toDataURL('image/jpeg', q); if(d && d.length>100) return d; }catch(e){} try{ return c.toDataURL('image/jpeg', 0.6); }catch(e){ return null; } }
+    async function canvasToDataURL(c, q){
+        // toBlob 异步优先（同步 toDataURL 大图阻塞主线程=真机卡死元凶），null 时兜底 toDataURL
+        let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+        if(blob) return await readAsDataURL(blob);
+        try{ return c.toDataURL('image/jpeg',q); }catch(e){ return null; }
+    }
     async function libPut(store, obj){ try{ const d=await db(); await new Promise((res,rej)=>{ const t=d.transaction(store,'readwrite'); t.objectStore(store).put(obj); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
     async function libDelMany(store, keys){ try{ const d=await db(); await new Promise((res,rej)=>{ const t=d.transaction(store,'readwrite'); const os=t.objectStore(store); keys.forEach(k=>os.delete(k)); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }catch(e){} }
     async function libLoad(){
@@ -1386,40 +1391,46 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         libRender();
     }
     $('#libImportBtn').addEventListener('click', ()=> $('#libFileInput').click() );
+    let libBusy=false;
     $('#libFileInput').addEventListener('change', async e=>{
         const fs=Array.from(e.target.files).filter(f=>f.type && f.type.startsWith('image/'));
         e.target.value='';
         if(!fs.length){ toast('没有图片文件','err'); return; }
+        if(libBusy){ toast('正在处理中，稍等','err'); return; }
+        libBusy=true;
         const btn=$('#libImportBtn'); const old=btn.textContent; btn.disabled=true;
         const bid=libUid();
         const d=new Date();
         const title=`${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         libBatches.push({ id:bid, title, at:d.toISOString() });
-        let okCnt=0;
+        let okCnt=0, failCnt=0;
+        const t0=Date.now();
         try{
-            for(let i=0;i<fs.length;i++){
-                btn.textContent=`⏳ 压缩 ${i+1}/${fs.length}…`;
+            const sorted=[...fs].sort((a,b)=>(a.lastModified||0)-(b.lastModified||0));
+            for(let i=0;i<sorted.length;i++){
+                btn.textContent=`⏳ 压缩 ${i+1}/${sorted.length}…（大图每张几秒，别关页面）`;
                 try{
-                    const bmp=await decodeBitmap(fs[i], LIB_LONG);
+                    const bmp=await decodeBitmap(sorted[i], LIB_LONG);
                     const sc=Math.min(1, LIB_LONG/Math.max(bmp.width,bmp.height));
                     const w=Math.round(bmp.width*sc), h=Math.round(bmp.height*sc);
                     const c=document.createElement('canvas'); c.width=w; c.height=h;
-                    c.getContext('2d').drawImage(bmp,0,0,w,h);
+                    const cx=c.getContext('2d'); cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality='high';
+                    cx.drawImage(bmp,0,0,w,h);
                     if(bmp.close) bmp.close();
                     const full=await canvasToDataURL(c, 0.78);
-                    if(!full) continue;
+                    if(!full){ failCnt++; continue; }
                     const tc=document.createElement('canvas');
                     const tsc=Math.min(1, 400/Math.max(w,h));
                     tc.width=Math.round(w*tsc); tc.height=Math.round(h*tsc);
                     tc.getContext('2d').drawImage(c,0,0,tc.width,tc.height);
                     const thumb=await canvasToDataURL(tc, 0.7);
-                    const p={ id:libUid(), batchId:bid, full, thumb:thumb||full, name:(fs[i].name||'photo').replace(/\.[^.]+$/,'')+'.jpg', usedAt:null, at:new Date().toISOString() };
+                    const p={ id:libUid(), batchId:bid, full, thumb:thumb||full, name:(sorted[i].name||'photo').replace(/\.[^.]+$/,'')+'.jpg', usedAt:null, at:new Date().toISOString() };
                     libPhotos.push(p); await libPut('libPhotos', p); okCnt++;
-                }catch(err){ /* 单张失败跳过 */ }
+                }catch(err){ failCnt++; toast(`第${i+1}张处理失败已跳过：${err.message||err}`,'err'); }
             }
-            if(okCnt){ await libPut('libBatches', libBatches.find(b=>b.id===bid)); libRender(); toast(`✅ 已导入 ${okCnt} 张（自动压缩）`,'ok'); switchMainTab('lib'); }
-            else{ libBatches=libBatches.filter(b=>b.id!==bid); toast('照片全部读取失败','err'); }
-        }finally{ btn.disabled=false; btn.textContent=old; }
+            if(okCnt){ await libPut('libBatches', libBatches.find(b=>b.id===bid)); libRender(); toast(`✅ 入库 ${okCnt} 张${failCnt?('（'+failCnt+'张失败）'):''}，用时${Math.round((Date.now()-t0)/1000)}秒`,'ok'); switchMainTab('lib'); }
+            else{ libBatches=libBatches.filter(b=>b.id!==bid); toast('全部读取失败，换浏览器或减少张数再试','err'); }
+        }finally{ libBusy=false; btn.disabled=false; btn.textContent=old; }
     });
     function libRender(){
         const st=$('#libStat');
