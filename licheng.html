@@ -132,7 +132,7 @@
         .add:active { background: #f1f5f9; }
 
         /* ==================== 底部目标进度条 ==================== */
-        .goalbar { position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 10px 14px calc(10px); display: flex; gap: 16px; }
+        .goalbar { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 8px 14px; display: flex; gap: 16px; }
         .goalbar .g { flex: 1; min-width: 0; }
         .goalbar .gt-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
         .goalbar .gt-top .gnum { color: #64748b; font-weight: 700; }
@@ -140,7 +140,7 @@
         .goalbar .track { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
         .goalbar .fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2563eb, #16a34a); border-radius: 4px; transition: width .3s; }
         .goalbar .fill.done { background: #16a34a; }
-        body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+        body { padding-bottom: calc(148px + env(safe-area-inset-bottom, 0px)) !important; }
 
         /* ==================== toast ==================== */
         .toast { position: fixed; left: 50%; top: 60px; transform: translateX(-50%); background: rgba(15,23,42,.92); color: #fff; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: .25s; z-index: 100000; max-width: 88vw; white-space: pre-line; font-size: 13px; text-align: center; }
@@ -205,7 +205,6 @@
         .main-tabs .bk-btn { width: 34px; height: 34px; border: none; border-radius: 10px; background: #f1f5f9; font-size: 16px; cursor: pointer; }
         .main-panel { display: none; }
         .main-panel.active { display: block; }
-        .goalbar-wrap.fortab { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
 
         /* ==================== 照片库 ==================== */
         .lib-wrap { max-width: 760px; margin: 0 auto; padding: 12px 12px 100px; }
@@ -227,7 +226,7 @@
         .lib-cell.sel .ck::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
         .lib-cell .used-bdg { position: absolute; right: 4px; bottom: 4px; background: #16a34a; color: #fff; font-size: 10px; font-weight: 800; border-radius: 6px; padding: 1px 5px; }
         .lib-cell.used img { opacity: .78; }
-        .lib-bar { position: fixed; left: 0; right: 0; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); background: rgba(15,23,42,.96); color: #fff; display: none; align-items: center; gap: 8px; padding: 10px 12px; z-index: 9000; border-radius: 14px 14px 0 0; }
+        .lib-bar { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); background: rgba(15,23,42,.96); color: #fff; display: none; align-items: center; gap: 8px; padding: 10px 12px; z-index: 9000; }
         .lib-bar.show { display: flex; }
         .lib-bar .cnt { font-size: 13px; font-weight: 700; flex: 1; }
         .lib-bar button { padding: 9px 14px; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -578,15 +577,15 @@
         <!-- 底部目标进度条：主题堆7家 / 盒装陈列80家 / 势能补码10家 -->
         <div class="goalbar" id="goalBar">
             <div class="g">
-                <div class="gt-top"><span>⛰️ 主题堆</span><span class="gnum" id="goal-zhuti">0/7家</span></div>
+                <div class="gt-top"><span>主题堆</span><span class="gnum" id="goal-zhuti">0/7</span></div>
                 <div class="track"><div class="fill" id="fill-zhuti"></div></div>
             </div>
             <div class="g">
-                <div class="gt-top"><span>📦 盒装陈列</span><span class="gnum" id="goal-hezhuang">0/80家</span></div>
+                <div class="gt-top"><span>盒装</span><span class="gnum" id="goal-hezhuang">0/80</span></div>
                 <div class="track"><div class="fill" id="fill-hezhuang"></div></div>
             </div>
             <div class="g">
-                <div class="gt-top"><span>🔥 势能补码</span><span class="gnum" id="goal-shineng">0/10家</span></div>
+                <div class="gt-top"><span>势能</span><span class="gnum" id="goal-shineng">0/10</span></div>
                 <div class="track"><div class="fill" id="fill-shineng"></div></div>
             </div>
         </div>
@@ -714,7 +713,7 @@
         md$('#cnt-'+tab).textContent=mdData[tab].length+'家';
         const n=mdData[tab].length, goal=GOALS[tab], done=n>=goal;
         const gnum=md$('#goal-'+tab), fill=md$('#fill-'+tab);
-        gnum.textContent=Math.min(n,goal)+'/'+goal+'家'+(done?' ✅':'');
+        gnum.textContent=Math.min(n,goal)+'/'+goal+(done?' ✅':'');
         gnum.classList.toggle('done', done);
         fill.style.width=Math.min(100, n/goal*100)+'%';
         fill.classList.toggle('done', done);
@@ -881,7 +880,7 @@
         document.getElementById('zhuti-list').innerHTML='';
         document.getElementById('hezhuang-list').innerHTML='';
         document.getElementById('shineng-list').innerHTML='';
-        addStore('zhuti'); addStore('hezhuang'); addStore('shineng');
+        updateCount('zhuti'); updateCount('hezhuang'); updateCount('shineng');
         if(curTab!=='zhuti') switchTab('zhuti');
         toast('已清空','ok');
     });
@@ -1982,12 +1981,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         }catch(e){}
     }, 1800);
 
-    // 初始化：同步先出第一家
+    // 初始化（v1.7：不再预建空白门店，用户自己点＋添加）
     (function initNow(){
         setToday();
-        mdData.zhuti.push({ id:mdUid++, store:'', door:null, second:null });
-        mdData.hezhuang.push({ id:mdUid++, store:'', door:null, second:null });
-        mdData.shineng.push({ id:mdUid++, store:'', door:null, photos:[] });
         renderList('zhuti'); renderList('hezhuang'); renderList('shineng');
     })();
     (async ()=>{
@@ -1998,7 +1994,6 @@ function drawLogoText(ctx, canvas, effectiveScale) {
                 mdData.shineng=(saved.shineng||[]).map(x=>({...x, photos:Array.isArray(x.photos)?x.photos:[]}));
                 nameInput.value=saved.name||'';
                 mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), 0)+1;
-                if(!mdData.shineng.length) mdData.shineng.push({ id:mdUid++, store:'', door:null, photos:[] });
                 renderList('zhuti'); renderList('hezhuang'); renderList('shineng');
             }
         }catch(e){}
