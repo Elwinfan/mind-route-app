@@ -341,32 +341,34 @@
                 <div class="step">
                     <span class="step-num">1</span>
                     <div class="step-content">
-                        <b>每天随手上传</b><br>
-                        <small>巡店拍的门头照、陈列照，选对应分类（主题堆/盒装陈列）传上去</small>
+                        <b>拍照进照片库</b><br>
+                        <small>多选导入自动压缩，按批次分组（=系列）长期保存，用过的照片自动挂 ✓+日期</small>
                     </div>
                 </div>
                 <div class="step">
                     <span class="step-num">2</span>
                     <div class="step-content">
-                        <b>照片自动保存</b><br>
-                        <small>✅ 退出浏览器 / 关手机，数据都不丢<br>✅ 换天再打开，接着传就行</small>
+                        <b>送水印 或 送整理</b><br>
+                        <small>✅ 水印：照片批量加水印入库（填门店信息时选分类）<br>✅ 整理：选分类→门店→门头/陈列（势能补码陈列可放1~5张）</small>
                     </div>
                 </div>
                 <div class="step">
                     <span class="step-num">3</span>
                     <div class="step-content">
                         <b>月底点「打包」</b><br>
-                        <small>自动生成压缩包，按分类分好文件夹，直接发企业微信</small>
+                        <small>四选一：主题堆 / 盒装 / 势能补码 / 三个一起，自动分好文件夹发企业微信</small>
                     </div>
                 </div>
             </div>
-            <div class="guide-tip">💡 <b>建议</b>：每天随手传，别攒到月底一次传，轻松不慌。</div>
+            <div class="guide-tip">💡 <b>建议</b>：每天随手传照片库，随手送，别攒到月底。</div>
             <div class="guide-divider"></div>
-            <div class="guide-version">v1.4.0</div>
+            <div class="guide-version">v1.7.0</div>
             <div class="guide-update">
                 <div class="update-title">📋 本次更新</div>
                 <ul>
-                    <li>打包改为三选一：只打包主题堆 / 只打包盒装陈列 / 两个一起</li>
+                    <li>水印功能并入本页（照片库|水印|整理 三合一），原水印工具页已下线</li>
+                    <li>新增势能补码分类：门头1张+陈列1~5张</li>
+                    <li>照片库送整理三步：分类→门店→门头/陈列</li>
                 </ul>
             </div>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
@@ -598,10 +600,15 @@
     (function() {
         // 使用说明弹窗：每次打开网页都强制显示
         const guideOverlay = document.getElementById('guideOverlay');
-        function closeGuide() { guideOverlay.classList.remove('open'); }
+        const GUIDE_VER = 'v1.7';
+        function closeGuide() { guideOverlay.classList.remove('open'); try{ localStorage.setItem('lczp_guide', GUIDE_VER); }catch(e){} }
         document.getElementById('guideStartBtn').addEventListener('click', closeGuide);
         guideOverlay.addEventListener('click', e => { if (e.target === guideOverlay) closeGuide(); });
-        window.addEventListener('load', () => guideOverlay.classList.add('open'));
+        // 只在没看过当前版本说明时弹（点过"我知道了"记住；版本更新换 GUIDE_VER 再弹）
+        window.addEventListener('load', () => {
+            let seen=null; try{ seen=localStorage.getItem('lczp_guide'); }catch(e){}
+            if(seen!==GUIDE_VER) guideOverlay.classList.add('open');
+        });
 
         // 浏览器建议弹窗（点❓按钮触发）
         const helpOverlay = document.getElementById('helpOverlay');
