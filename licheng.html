@@ -482,7 +482,7 @@
                 <div class=seq-pair id=smPair></div>
                 <button class=swap-btn id=smSwap type=button>⇄ 门头/陈列 对调</button>
                 <div class="f"><label>入库分类 *</label>
-                    <select id="smTypeSel"><option value="hezhuang">盒装陈列</option><option value="zhuti">主题堆</option></select>
+                    <select id="smTypeSel"><option value="hezhuang">盒装陈列</option><option value="zhuti">主题堆</option><option value="shineng">势能补码</option></select>
                 </div>
                 <div class="f"><label>门店名 *</label><input id="smStore" type="text" maxlength="40" placeholder="沃尔玛" autocomplete="off"></div>
                 <div class="f"><label>地址（点下方可快速填入）*</label>
@@ -1867,7 +1867,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             $('#seqModal').classList.remove('open');
             renderSeq();
             pumpQueue();   // 批量模式：队列还有照片 → 自动弹下一家
-            toast(`✅「${store}」已加水印 → 整理·${SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`,'ok');
+            toast(`✅「${store}」已加水印 → 整理·${tab==='shineng'?'势能补码':SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`,'ok');
         }catch(err){
             toast('加水印失败：'+(err.message||err),'err');
         }finally{
@@ -1880,20 +1880,30 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     // 照片流入整理：第1张=门头 第2张=陈列；单张(门头)优先补已有同名门店的空门头槽
     function deliverPhotos(tab, storeName, door, second){
         const cn = clean(storeName);
-        // 单张门头照：先在两个分类里找同名且缺门头的已有门店补槽
+        // 单张门头照：先在三个分类里找同名且缺门头的已有门店补槽
         if(!second && door){
-            for(const t of ['zhuti','hezhuang']){
+            for(const t of ['zhuti','hezhuang','shineng']){
                 const s = mdData[t].find(x=>clean(x.store)===cn && !x.door);
                 if(s){ s.door=door; renderList(t); updateCount(t); scheduleSave(); return 'filled-existing'; }
             }
         }
         let s = mdData[tab].find(x=>clean(x.store)===cn);
         let created=false;
-        if(!s){ s={ id:mdUid++, store:storeName, door:null, second:null }; mdData[tab].push(s); created=true; }
-        let dropped = 0;
+        if(!s){ s={ id:mdUid++, store:storeName, door:null, second:null, photos:[] }; mdData[tab].push(s); created=true; }
+        let dropped = 0, snFull = false;
         if(door){ if(!s.door) s.door=door; else dropped++; }
-        if(second){ if(!s.second) s.second=second; else dropped++; }
+        if(second){
+            // 势能补码：陈列照进照片墙（1~5张），不占 second 单格
+            if(tab==='shineng'){
+                if(!Array.isArray(s.photos)) s.photos=[];
+                if(s.photos.length<5) s.photos.push(second);
+                else { dropped++; snFull=true; }
+            }else{
+                if(!s.second) s.second=second; else dropped++;
+            }
+        }
         renderList(tab); updateCount(tab); updateBadge(); scheduleSave();
+        if(snFull) toast(`「${storeName}」陈列已满5张，这张陈列照没放进去`,'err');
         return created ? 'created' : (dropped ? 'dropped-'+dropped : 'merged');
     }
 
