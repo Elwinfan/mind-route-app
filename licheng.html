@@ -169,23 +169,14 @@
         .guide-rank .rank-text small { display: block; font-size: 12px; color: #64748b; margin-top: 1px; }
         .guide-warn { font-size: 13px; color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
         .guide-warn b { color: #dc2626; }
-        .guide-tip { font-size: 13px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
-        .guide-tip b { color: #2563eb; }
-        .guide-star { font-size: 13px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; padding: 10px 12px; border-radius: 9px; margin-bottom: 10px; line-height: 1.6; }
-        .guide-star b { color: #d97706; }
-        .guide-version { text-align: right; font-size: 11px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
-        .guide-update { font-size: 12px; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; }
-        .guide-update .update-title { font-weight: 600; color: #475569; margin-bottom: 2px; }
-        .guide-update ul { margin: 0; padding-left: 18px; color: #64748b; line-height: 1.7; }
-
-        /* ==================== 使用说明步骤 ==================== */
-        .guide-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
-        .step { display: flex; gap: 12px; align-items: flex-start; }
-        .step-num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #16A34A, #15803D); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; box-shadow: 0 2px 6px rgba(22,163,74,.3); }
-        .step-content { flex: 1; font-size: 14px; color: #334155; line-height: 1.6; padding-top: 2px; }
-        .step-content b { color: #0f172a; font-weight: 600; }
-        .step-content small { display: block; font-size: 12px; color: #64748b; margin-top: 2px; }
-        .guide-divider { height: 1px; background: #e2e8f0; margin: 14px 0 12px; }
+        .goal-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+        .goal-form .gf { display: flex; align-items: center; gap: 10px; }
+        .goal-form .gf label { flex: 1; font-size: 14px; font-weight: 600; color: #334155; }
+        .goal-form .gf input { width: 90px; padding: 9px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; font-weight: 700; text-align: center; color: #1f2937; min-height: 40px; }
+        .goal-form .gf input:focus { outline: none; border-color: #2563eb; }
+        .goal-note { font-size: 12px; color: #64748b; text-align: center; margin-bottom: 12px; }
+        .goal-cancel { width: 100%; margin-top: 8px; padding: 10px; border: none; background: none; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .goalbtn { padding: 9px 14px; border: none; background: #fffbeb; color: #b45309; border: 1.5px solid #fcd34d; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
 
         /* ==================== 右下角❓按钮 ==================== */
         .help-fab { display: none; }
@@ -341,46 +332,19 @@
     </style>
 </head>
 <body>
-    <!-- 使用说明弹窗 -->
-    <div id="guideOverlay" class="guide-overlay">
+    <!-- 🎯 目标家数设置弹窗 -->
+    <div id="goalOverlay" class="guide-overlay">
         <div class="guide-card">
-            <h3 class="guide-title">📖 使用说明</h3>
-            <div class="guide-steps">
-                <div class="step">
-                    <span class="step-num">1</span>
-                    <div class="step-content">
-                        <b>拍照进照片库</b><br>
-                        <small>多选导入自动压缩，按批次分组（=系列）长期保存，用过的照片自动挂 ✓+日期</small>
-                    </div>
-                </div>
-                <div class="step">
-                    <span class="step-num">2</span>
-                    <div class="step-content">
-                        <b>送水印 或 送整理</b><br>
-                        <small>✅ 水印：照片批量加水印入库（填门店信息时选分类）<br>✅ 整理：选分类→门店→门头/陈列（多点陈列可放1~5张；大日期只放1张单据）</small>
-                    </div>
-                </div>
-                <div class="step">
-                    <span class="step-num">3</span>
-                    <div class="step-content">
-                        <b>月底点「打包」</b><br>
-                        <small>五选一：大日期 / 盒装 / 多点陈列 / 新老网点 / 四个一起，自动分好文件夹发企业微信</small>
-                    </div>
-                </div>
+            <h3 class="guide-title">🎯 目标家数设置</h3>
+            <div class="goal-form">
+                <div class="gf"><label>📅 大日期</label><input id="gf-zhuti" type="number" min="1" max="999" step="1" inputmode="numeric"></div>
+                <div class="gf"><label>📦 盒装陈列</label><input id="gf-hezhuang" type="number" min="1" max="999" step="1" inputmode="numeric"></div>
+                <div class="gf"><label>🔥 多点陈列</label><input id="gf-shineng" type="number" min="1" max="999" step="1" inputmode="numeric"></div>
+                <div class="gf"><label>🆕 新老网点</label><input id="gf-xindaan" type="number" min="1" max="999" step="1" inputmode="numeric"></div>
             </div>
-            <div class="guide-tip">💡 <b>建议</b>：每天随手传照片库，随手送，别攒到月底。</div>
-            <div class="guide-divider"></div>
-            <div class="guide-version">v1.8.1</div>
-            <div class="guide-update">
-                <div class="update-title">📋 本次更新</div>
-                <ul>
-                    <li>「主题堆」更名「大日期」：每家只要 1 张单据照（不再拍门头）</li>
-                    <li>「势能补码」更名「多点陈列」（规则不变：门头1张+陈列1~5张）</li>
-                    <li>新增「新老网点」分类：门头1张+陈列1张，目标15家</li>
-                    <li>打包升级五选一：新增「只打包新老网点」和「四个分类一起打包」</li>
-                </ul>
-            </div>
-            <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
+            <div class="goal-note">只改目标家数（进度条），不动已整理的门店照片。</div>
+            <button class="guide-btn" id="goalSaveBtn" type="button">✅ 保存</button>
+            <button class="goal-cancel" id="goalCancelBtn" type="button">取消</button>
         </div>
     </div>
 
@@ -549,6 +513,7 @@
                 </div>
                 <div class="row2">
                     <button class="reset" id="mdResetBtn" type="button">🗑️ 重置</button>
+                    <button class="goalbtn" id="goalBtn" type="button">🎯 目标</button>
                     <button class="export" id="exportBtn" type="button">📦 打包</button>
                 </div>
                 <div class="md-segment">
@@ -610,21 +575,31 @@
 
     <script>
     /* ========================================================
-     * 使用说明弹窗（每次打开都弹）+ 浏览器建议弹窗（点❓触发）
+     * 🎯 目标家数设置弹窗（点「🎯 目标」按钮打开，随时可改）
      * ====================================================== */
     (function() {
-        // 使用说明弹窗：每次打开网页都强制显示
-        const guideOverlay = document.getElementById('guideOverlay');
-        const GUIDE_VER = 'v1.8.1';
-        function closeGuide() { guideOverlay.classList.remove('open'); try{ localStorage.setItem('lczp_guide', GUIDE_VER); }catch(e){} }
-        document.getElementById('guideStartBtn').addEventListener('click', closeGuide);
-        guideOverlay.addEventListener('click', e => { if (e.target === guideOverlay) closeGuide(); });
-        // 只在没看过当前版本说明时弹（点过"我知道了"记住；版本更新换 GUIDE_VER 再弹）
-        window.addEventListener('load', () => {
-            let seen=null; try{ seen=localStorage.getItem('lczp_guide'); }catch(e){}
-            if(seen!==GUIDE_VER) guideOverlay.classList.add('open');
+        const overlay = document.getElementById('goalOverlay');
+        function openGoal() {
+            ALL_TABS.forEach(t => document.getElementById('gf-'+t).value = GOALS[t]);
+            overlay.classList.add('open');
+        }
+        function closeGoal() { overlay.classList.remove('open'); }
+        document.getElementById('goalBtn').addEventListener('click', openGoal);
+        document.getElementById('goalCancelBtn').addEventListener('click', closeGoal);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeGoal(); });
+        document.getElementById('goalSaveBtn').addEventListener('click', () => {
+            const next = {};
+            for (const t of ALL_TABS) {
+                const v = parseInt(document.getElementById('gf-'+t).value, 10);
+                if (!Number.isInteger(v) || v < 1 || v > 999) { toast(`「${TAB_NAME[t]}」的家数要填 1~999 的整数`,'err'); return; }
+                next[t] = v;
+            }
+            for (const t of ALL_TABS) GOALS[t] = next[t];
+            try { localStorage.setItem('lczp_goals', JSON.stringify(GOALS)); }catch(e){}
+            ALL_TABS.forEach(t => updateCount(t));
+            closeGoal();
+            toast(`✅ 目标已更新：${ALL_TABS.map(t => TAB_NAME[t]+' '+GOALS[t]+'家').join('，')}`,'ok');
         });
-
     })();
 
     /* ========================================================
@@ -739,7 +714,16 @@
         document.getElementById(tab+'-list').innerHTML = mdData[tab].map(s=>cardHTML(tab,s)).join('');
         updateCount(tab);
     }
-    const GOALS = { zhuti:7, hezhuang:80, shineng:10, xindaan:15 };
+    // 目标家数：默认 7/80/10/15，改过的存本机 localStorage（🎯 目标 弹窗可随时改）
+    const GOALS = (()=>{
+        const def = { zhuti:7, hezhuang:80, shineng:10, xindaan:15 };
+        try{
+            const s = JSON.parse(localStorage.getItem('lczp_goals') || 'null');
+            if (s && ALL_TABS.every(t => Number.isInteger(s[t]) && s[t] >= 1 && s[t] <= 999))
+                return { zhuti:s.zhuti, hezhuang:s.hezhuang, shineng:s.shineng, xindaan:s.xindaan };
+        }catch(e){}
+        return def;
+    })();
     function updateCount(tab){
         md$('#cnt-'+tab).textContent=mdData[tab].length+'家';
         const n=mdData[tab].length, goal=GOALS[tab], done=n>=goal;
@@ -1050,7 +1034,7 @@
     function db(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('mendianzip4',2); r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); if(!d.objectStoreNames.contains('libPhotos')) d.createObjectStore('libPhotos',{keyPath:'id'}); if(!d.objectStoreNames.contains('libBatches')) d.createObjectStore('libBatches',{keyPath:'id'}); }; r.onsuccess=()=>{_db=r.result;res(_db);}; r.onerror=()=>rej(r.error); }); }
     async function idbPut(v){ try{ const d=await db(); await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite'); t.objectStore('kv').put(v,'cur'); t.oncomplete=res; t.onerror=()=>rej(t.error);}); }catch(e){} }
     async function idbGet(){ try{ const d=await db(); return await new Promise(res=>{const t=d.transaction('kv','readonly'); const q=t.objectStore('kv').get('cur'); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null);}); }catch(e){ return null; } }
-    function serialize(){ return { name:nameInput.value, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang, shineng:mdData.shineng, xindaan:mdData.xindaan }; }
+    function serialize(){ return { name:nameInput.value, goals:GOALS, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang, shineng:mdData.shineng, xindaan:mdData.xindaan }; }
     let saveTimer; let saving=false;
     function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,800); }
     async function doSave(){ if(saving){ scheduleSave(); return; } saving=true; try{ await idbPut(serialize()); }catch(e){} finally{ saving=false; } }
@@ -1494,6 +1478,12 @@
             mdData.hezhuang=(m.hezhuang||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
             mdData.xindaan=(m.xindaan||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
             mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), ...mdData.xindaan.map(x=>x.id), 0)+1;
+            // 恢复目标家数（v1.8.2+ 备份含 goals）
+            if (m.goals && ALL_TABS.every(t => Number.isInteger(m.goals[t]) && m.goals[t] >= 1 && m.goals[t] <= 999)) {
+                ALL_TABS.forEach(t => GOALS[t] = m.goals[t]);
+                try { localStorage.setItem('lczp_goals', JSON.stringify(GOALS)); }catch(e){}
+                ALL_TABS.forEach(t => updateCount(t));
+            }
             nameInput.value=m.name||'';
             renderList('zhuti'); renderList('hezhuang'); renderList('shineng'); renderList('xindaan');
             await idbPut(serialize());
