@@ -139,7 +139,7 @@
         .add:active { background: #f1f5f9; }
 
         /* ==================== 底部目标进度条 ==================== */
-        .goalbar { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 8px 14px; display: flex; gap: 16px; }
+        .goalbar { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,.08); padding: 8px 12px; display: flex; gap: 10px; }
         .goalbar .g { flex: 1; min-width: 0; }
         .goalbar .gt-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
         .goalbar .gt-top .gnum { color: #64748b; font-weight: 700; }
@@ -272,7 +272,7 @@
         .mat-cell img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
         .mat-cell .mused { position: absolute; right: 2px; bottom: 2px; background: #16a34a; color: #fff; font-size: 9px; font-weight: 800; border-radius: 5px; padding: 1px 4px; }
         .mat-cell .mx { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border: none; border-radius: 50%; background: rgba(15,23,42,.65); color: #fff; font-size: 11px; cursor: pointer; padding: 0; }
-        /* 势能补码陈列照片墙（1~5张） */
+        /* 多点陈列陈列照片墙（1~5张） */
         .sn-photos { margin-top: 8px; border-top: 1px dashed #fdba74; padding-top: 8px; }
         .sn-title { font-size: 12px; font-weight: 700; color: #c2410c; margin-bottom: 6px; }
         .sn-grid { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -282,6 +282,7 @@
         .sn-add { width: 72px; height: 72px; border: 2px dashed #fdba74; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #ea580c; cursor: pointer; background: #fff7ed; }
         .sn-add input { display: none; }
         .exp-menu .e4 { background: linear-gradient(135deg, #ea580c, #f59e0c); }
+        .exp-menu .e5 { background: linear-gradient(135deg, #7c3aed, #a855f7); }
         /* ==================== 水印板块（从 lcsp v1.9.1 搬入） ==================== */
         .wm-wrap { max-width: 760px; margin: 0 auto; padding: 12px 12px 100px; }
         .wm-note { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
@@ -356,26 +357,27 @@
                     <span class="step-num">2</span>
                     <div class="step-content">
                         <b>送水印 或 送整理</b><br>
-                        <small>✅ 水印：照片批量加水印入库（填门店信息时选分类）<br>✅ 整理：选分类→门店→门头/陈列（势能补码陈列可放1~5张）</small>
+                        <small>✅ 水印：照片批量加水印入库（填门店信息时选分类）<br>✅ 整理：选分类→门店→门头/陈列（多点陈列可放1~5张；大日期只放1张单据）</small>
                     </div>
                 </div>
                 <div class="step">
                     <span class="step-num">3</span>
                     <div class="step-content">
                         <b>月底点「打包」</b><br>
-                        <small>四选一：主题堆 / 盒装 / 势能补码 / 三个一起，自动分好文件夹发企业微信</small>
+                        <small>五选一：大日期 / 盒装 / 多点陈列 / 新老网点 / 四个一起，自动分好文件夹发企业微信</small>
                     </div>
                 </div>
             </div>
             <div class="guide-tip">💡 <b>建议</b>：每天随手传照片库，随手送，别攒到月底。</div>
             <div class="guide-divider"></div>
-            <div class="guide-version">v1.7.0</div>
+            <div class="guide-version">v1.8.1</div>
             <div class="guide-update">
                 <div class="update-title">📋 本次更新</div>
                 <ul>
-                    <li>水印功能并入本页（照片库|水印|整理 三合一），原水印工具页已下线</li>
-                    <li>新增势能补码分类：门头1张+陈列1~5张</li>
-                    <li>照片库送整理三步：分类→门店→门头/陈列</li>
+                    <li>「主题堆」更名「大日期」：每家只要 1 张单据照（不再拍门头）</li>
+                    <li>「势能补码」更名「多点陈列」（规则不变：门头1张+陈列1~5张）</li>
+                    <li>新增「新老网点」分类：门头1张+陈列1张，目标15家</li>
+                    <li>打包升级五选一：新增「只打包新老网点」和「四个分类一起打包」</li>
                 </ul>
             </div>
             <button class="guide-btn" id="guideStartBtn" type="button">我知道了</button>
@@ -387,10 +389,11 @@
         <div class="guide-card">
             <h3 class="guide-title">📦 选择打包内容</h3>
             <div class="exp-menu">
-                <button class="e1" id="exp-zhuti" type="button">⛰️ 只打包主题堆<small>压缩包里只有「主题堆陈列」文件夹</small></button>
+                <button class="e1" id="exp-zhuti" type="button">📅 只打包大日期<small>压缩包里只有「大日期」文件夹</small></button>
                 <button class="e2" id="exp-hezhuang" type="button">📦 只打包盒装陈列<small>压缩包里只有「盒装陈列」文件夹</small></button>
-                <button class="e4" id="exp-shineng" type="button">🔥 只打包势能补码<small>压缩包里只有「势能补码」文件夹</small></button>
-                <button class="e3" id="exp-all" type="button">🗂️ 三个分类一起打包<small>主题堆 + 盒装陈列 + 势能补码，一个压缩包</small></button>
+                <button class="e4" id="exp-shineng" type="button">🔥 只打包多点陈列<small>压缩包里只有「多点陈列」文件夹</small></button>
+                <button class="e5" id="exp-xindaan" type="button">🆕 只打包新老网点<small>压缩包里只有「新老网点」文件夹</small></button>
+                <button class="e3" id="exp-all" type="button">🗂️ 四个分类一起打包<small>大日期 + 盒装陈列 + 多点陈列 + 新老网点，一个压缩包</small></button>
                 <button class="ec" id="exp-cancel" type="button">取消</button>
             </div>
         </div>
@@ -430,7 +433,7 @@
             <div class="lib-modal-card">
                 <div class="lib-modal-title">送到哪家门店？</div>
                 <div class="f"><label>分类 *</label>
-                    <select id="libTabSel"><option value="zhuti">主题堆</option><option value="hezhuang">盒装陈列</option><option value="shineng">势能补码</option></select>
+                    <select id="libTabSel"><option value="zhuti">大日期</option><option value="hezhuang">盒装陈列</option><option value="shineng">多点陈列</option><option value="xindaan">新老网点</option></select>
                 </div>
                 <div class="f"><label>门店 *</label><select id="libStoreSel" class="lib-sel"></select></div>
                 <div class="f"><label>放到哪个位置？ *</label>
@@ -502,8 +505,9 @@
                 <div class="f"><label>入库分类 *（可多选，一照两用）</label>
                     <div class="type-checks" id="smTypeChecks">
                         <label class="tc on"><input type="checkbox" value="hezhuang" checked><span>📦 盒装陈列</span></label>
-                        <label class="tc"><input type="checkbox" value="zhuti"><span>⛰️ 主题堆</span></label>
-                        <label class="tc"><input type="checkbox" value="shineng"><span>🔥 势能补码</span></label>
+                        <label class="tc"><input type="checkbox" value="zhuti"><span>📅 大日期</span></label>
+                        <label class="tc"><input type="checkbox" value="shineng"><span>🔥 多点陈列</span></label>
+                        <label class="tc"><input type="checkbox" value="xindaan"><span>🆕 新老网点</span></label>
                     </div>
                 </div>
                 <div class="f"><label>门店名 *</label><input id="smStore" type="text" maxlength="40" placeholder="沃尔玛" autocomplete="off"></div>
@@ -548,18 +552,19 @@
                     <button class="export" id="exportBtn" type="button">📦 打包</button>
                 </div>
                 <div class="md-segment">
-                    <button class="seg-btn active" id="tab-zhuti" type="button">主题堆<small id="cnt-zhuti">1家</small></button>
-                    <button class="seg-btn gt" id="tab-hezhuang" type="button">盒装陈列<small id="cnt-hezhuang">1家</small></button>
-                    <button class="seg-btn sn" id="tab-shineng" type="button">势能补码<small id="cnt-shineng">1家</small></button>
+                    <button class="seg-btn active" id="tab-zhuti" type="button">大日期<small id="cnt-zhuti">0家</small></button>
+                    <button class="seg-btn gt" id="tab-hezhuang" type="button">盒装陈列<small id="cnt-hezhuang">0家</small></button>
+                    <button class="seg-btn sn" id="tab-shineng" type="button">多点陈列<small id="cnt-shineng">0家</small></button>
+                    <button class="seg-btn dp" id="tab-xindaan" type="button">新老网点<small id="cnt-xindaan">0家</small></button>
                 </div>
             </div>
 
             <div class="panels">
                 <section id="zhuti-panel" class="panel active">
-                    <div class="ptitle">⛰️ 主题堆陈列 — 每家：门店名 + 门头照 + 主题堆照</div>
-                    <label class="batch-all"><input type="file" accept="image/*" multiple>📤 批量上传（门头-主题堆）</label>
+                    <div class="ptitle">📅 大日期 — 每家：门店名 + 单据照1张（不拍门头）</div>
+                    <label class="batch-all"><input type="file" accept="image/*" multiple>📤 批量上传（每1张 = 1家单据）</label>
                     <div class="list" id="zhuti-list" data-tab="zhuti"></div>
-                    <button class="add" id="add-zhuti" type="button">＋ 添加一家主题堆门店</button>
+                    <button class="add" id="add-zhuti" type="button">＋ 添加一家大日期门店</button>
                 </section>
                 <section id="hezhuang-panel" class="panel block-gt">
                     <div class="ptitle">📦 盒装陈列 — 每家：门店名 + 门头照 + 盒装照</div>
@@ -568,18 +573,24 @@
                     <button class="add" id="add-hezhuang" type="button">＋ 添加一家盒装陈列门店</button>
                 </section>
                 <section id="shineng-panel" class="panel block-sn">
-                    <div class="ptitle">🔥 势能补码 — 每家：门店名 + 门头照1张 + 陈列照1~5张</div>
+                    <div class="ptitle">🔥 多点陈列 — 每家：门店名 + 门头照1张 + 陈列照1~5张</div>
                     <div class="list" id="shineng-list" data-tab="shineng"></div>
-                    <button class="add" id="add-shineng" type="button">＋ 添加一家势能补码门店</button>
+                    <button class="add" id="add-shineng" type="button">＋ 添加一家多点陈列门店</button>
+                </section>
+                <section id="xindaan-panel" class="panel block-dp">
+                    <div class="ptitle">🆕 新老网点 — 每家：门店名 + 门头照 + 陈列照</div>
+                    <label class="batch-all"><input type="file" accept="image/*" multiple>📤 批量上传（门头-陈列）</label>
+                    <div class="list" id="xindaan-list" data-tab="xindaan"></div>
+                    <button class="add" id="add-xindaan" type="button">＋ 添加一家新老网点门店</button>
                 </section>
             </div>
         </section>
         <div class="toast" id="toast"></div>
 
-        <!-- 底部目标进度条：主题堆7家 / 盒装陈列80家 / 势能补码10家 -->
+        <!-- 底部目标进度条：大日期7家 / 盒装陈列80家 / 多点陈列10家 / 新老网点15家 -->
         <div class="goalbar" id="goalBar">
             <div class="g">
-                <div class="gt-top"><span>主题堆</span><span class="gnum" id="goal-zhuti">0/7</span></div>
+                <div class="gt-top"><span>大日期</span><span class="gnum" id="goal-zhuti">0/7</span></div>
                 <div class="track"><div class="fill" id="fill-zhuti"></div></div>
             </div>
             <div class="g">
@@ -587,8 +598,12 @@
                 <div class="track"><div class="fill" id="fill-hezhuang"></div></div>
             </div>
             <div class="g">
-                <div class="gt-top"><span>势能</span><span class="gnum" id="goal-shineng">0/10</span></div>
+                <div class="gt-top"><span>多点</span><span class="gnum" id="goal-shineng">0/10</span></div>
                 <div class="track"><div class="fill" id="fill-shineng"></div></div>
+            </div>
+            <div class="g">
+                <div class="gt-top"><span>新老</span><span class="gnum" id="goal-xindaan">0/15</span></div>
+                <div class="track"><div class="fill" id="fill-xindaan"></div></div>
             </div>
         </div>
     </div>
@@ -600,7 +615,7 @@
     (function() {
         // 使用说明弹窗：每次打开网页都强制显示
         const guideOverlay = document.getElementById('guideOverlay');
-        const GUIDE_VER = 'v1.7';
+        const GUIDE_VER = 'v1.8.1';
         function closeGuide() { guideOverlay.classList.remove('open'); try{ localStorage.setItem('lczp_guide', GUIDE_VER); }catch(e){} }
         document.getElementById('guideStartBtn').addEventListener('click', closeGuide);
         guideOverlay.addEventListener('click', e => { if (e.target === guideOverlay) closeGuide(); });
@@ -615,9 +630,11 @@
     /* ========================================================
      * 门店整理逻辑
      * ====================================================== */
-    const SECOND_LABEL = { zhuti:'主题堆', hezhuang:'盒装', shineng:'陈列' };
+    const SECOND_LABEL = { zhuti:'单据', hezhuang:'盒装', shineng:'陈列', xindaan:'陈列' };
+    const TAB_NAME = { zhuti:'大日期', hezhuang:'盒装陈列', shineng:'多点陈列', xindaan:'新老网点' };
+    const ALL_TABS = ['zhuti','hezhuang','shineng','xindaan'];
     let mdUid = 1;
-    const mdData = { zhuti:[], hezhuang:[], shineng:[] };
+    const mdData = { zhuti:[], hezhuang:[], shineng:[], xindaan:[] };
     let curTab = 'zhuti';
 
     // 用一个独立的 $，避免与未来扩展冲突
@@ -668,7 +685,20 @@
                 <button class="cp" type="button" title="一照两用：这家店的照片也算进其他分类">⧉</button>
                 <button class="del" type="button">删除</button>
             </div>`;
-        // 势能补码：门头1张 + 陈列照片墙1~5张
+        // 大日期：只要1张单据照（不拍门头），复用 second 字段存单据
+        if(tab==='zhuti'){
+            return `<div class="card store-card" data-id="${s.id}">
+            ${head}
+            <div class="imgs">
+                <div class="slot ${s.second?'has':''}" data-type="second">
+                    <label class="tap"><input type="file" accept="image/*"><span class="ph">单据</span><img class="pv" src="${thumbOf(s.second)}" alt=""></label>
+                    <span class="tag">单据</span><button class="x" type="button">✕</button>
+                </div>
+            </div>
+            ${mats}
+        </div>`;
+        }
+        // 多点陈列：门头1张 + 陈列照片墙1~5张
         if(tab==='shineng'){
             const photos=Array.isArray(s.photos)?s.photos:[];
             return `<div class="card store-card" data-id="${s.id}">
@@ -709,7 +739,7 @@
         document.getElementById(tab+'-list').innerHTML = mdData[tab].map(s=>cardHTML(tab,s)).join('');
         updateCount(tab);
     }
-    const GOALS = { zhuti:7, hezhuang:80, shineng:10 };
+    const GOALS = { zhuti:7, hezhuang:80, shineng:10, xindaan:15 };
     function updateCount(tab){
         md$('#cnt-'+tab).textContent=mdData[tab].length+'家';
         const n=mdData[tab].length, goal=GOALS[tab], done=n>=goal;
@@ -741,27 +771,25 @@
         card.scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    // segment 切换（两大分类）
-    md$('#tab-zhuti').addEventListener('click', ()=> switchTab('zhuti') );
-    md$('#tab-hezhuang').addEventListener('click', ()=> switchTab('hezhuang') );
-    md$('#tab-shineng').addEventListener('click', ()=> switchTab('shineng') );
+    // segment 切换（四个分类）
+    ALL_TABS.forEach(t => md$('#tab-'+t).addEventListener('click', ()=> switchTab(t) ));
     function switchTab(tab){
         curTab=tab;
-        md$('#tab-zhuti').classList.toggle('active', tab==='zhuti');
-        md$('#tab-hezhuang').classList.toggle('active', tab==='hezhuang');
-        md$('#tab-hezhuang').classList.toggle('gt', tab==='hezhuang');
-        md$('#tab-shineng').classList.toggle('active', tab==='shineng');
-        md$('#tab-shineng').classList.toggle('sn', tab==='shineng');
-        document.querySelectorAll('#store-panel .panel').forEach(p=>p.classList.remove('active','block-gt','block-sn'));
+        ALL_TABS.forEach(t=>{
+            md$('#tab-'+t).classList.toggle('active', tab===t);
+            md$('#tab-'+t).classList.toggle('gt', tab===t && t==='hezhuang');
+            md$('#tab-'+t).classList.toggle('sn', tab===t && t==='shineng');
+            md$('#tab-'+t).classList.toggle('dp', tab===t && t==='xindaan');
+        });
+        document.querySelectorAll('#store-panel .panel').forEach(p=>p.classList.remove('active','block-gt','block-sn','block-dp'));
         const p=document.getElementById(tab+'-panel'); p.classList.add('active');
         if(tab==='hezhuang') p.classList.add('block-gt');
         if(tab==='shineng') p.classList.add('block-sn');
+        if(tab==='xindaan') p.classList.add('block-dp');
         renderList(tab);
         window.scrollTo({top:0, behavior:'smooth'});
     }
-    md$('#add-zhuti').addEventListener('click', ()=> addStore('zhuti') );
-    md$('#add-hezhuang').addEventListener('click', ()=> addStore('hezhuang') );
-    md$('#add-shineng').addEventListener('click', ()=> addStore('shineng') );
+    ALL_TABS.forEach(t => md$('#add-'+t).addEventListener('click', ()=> addStore(t) ));
 
     // ======================================================
     // 一照两用：门店卡⧉ → 同一家店的照片也算进其他分类（独立副本，两边各管各的）
@@ -769,25 +797,26 @@
     let copyFrom = null;   // {tab, id}
     function openCopyStore(tab, id){
         const s = findStore(tab, id); if(!s) return;
-        if(!String(s.store||'').trim() || !s.door){ toast('这家店还没有店名或门头照，先补全再复用','err'); return; }
+        const needDoor = tab!=='zhuti';
+        if(!String(s.store||'').trim() || (needDoor && !s.door)){ toast(`这家店还没有店名或${needDoor?'门头照':'单据照'}，先补全再复用`,'err'); return; }
         const second = tab==='shineng' ? ((Array.isArray(s.photos)&&s.photos.length)?s.photos[0]:null) : s.second;
         if(!second){ toast('这家店还没有陈列照，先补全再复用','err'); return; }
         copyFrom = { tab, id };
-        const names = { zhuti:'⛰️ 主题堆', hezhuang:'📦 盒装陈列', shineng:'🔥 势能补码' };
-        md$('#copyActions').innerHTML = ['zhuti','hezhuang','shineng'].filter(t=>t!==tab).map(t=>`<button type="button" data-t="${t}">${names[t]}</button>`).join('');
+        const names = { zhuti:'📅 大日期', hezhuang:'📦 盒装陈列', shineng:'🔥 多点陈列', xindaan:'🆕 新老网点' };
+        md$('#copyActions').innerHTML = ALL_TABS.filter(t=>t!==tab).map(t=>`<button type="button" data-t="${t}">${names[t]}</button>`).join('');
         md$('#copyStoreTitle').textContent = `「${s.store.trim()}」的照片也算进哪个分类？`;
         md$('#copyStoreModal').classList.add('open');
     }
     function copyStoreTo(srcTab, id, dstTab){
         const s = findStore(srcTab, id); if(!s) return;
-        const dstName = dstTab==='shineng' ? '势能补码' : SECOND_LABEL[dstTab];
+        const dstName = TAB_NAME[dstTab];
         const second = srcTab==='shineng' ? ((s.photos||[])[0]||null) : s.second;
         const cn = clean(s.store);
         let d = mdData[dstTab].find(x=>clean(x.store)===cn);
         let created=false;
         if(!d){ d={ id:mdUid++, store:s.store.trim(), door:null, second:null, photos:[] }; mdData[dstTab].push(d); created=true; }
         let filled=0;
-        if(!d.door && s.door){ d.door=s.door; filled++; }
+        if(dstTab!=='zhuti' && !d.door && s.door){ d.door=s.door; filled++; }
         if(second){
             if(dstTab==='shineng'){
                 if(!Array.isArray(d.photos)) d.photos=[];
@@ -807,7 +836,7 @@
     md$('#copyCancel').addEventListener('click', ()=> md$('#copyStoreModal').classList.remove('open') );
     md$('#copyStoreModal').addEventListener('click', e=>{ if(e.target.id==='copyStoreModal') md$('#copyStoreModal').classList.remove('open'); });
 
-    ['zhuti','hezhuang','shineng'].forEach(tab=>{
+    ALL_TABS.forEach(tab=>{
         const list=document.getElementById(tab+'-list');
         list.addEventListener('click', e=>{
             const card=e.target.closest('.store-card'); if(!card) return;
@@ -816,7 +845,7 @@
             if(mx && s){ const mi=+mx.closest('.mat-cell').dataset.mi; if(s.materials && s.materials[mi]){ s.materials.splice(mi,1); renderList(tab); scheduleSave(); } return; }
             const mc=e.target.closest('.mat-cell');
             if(mc && s){ const m=(s.materials||[])[+mc.dataset.mi]; if(m){ openPv(m.full); } return; }
-            // 势能补码陈列墙：✕删单张 / 点图放大
+            // 多点陈列陈列墙：✕删单张 / 点图放大
             const snx=e.target.closest('.sn-cell .x');
             if(snx && s){ const pi=+snx.closest('.sn-cell').dataset.pi; if(Array.isArray(s.photos)){ s.photos.splice(pi,1); renderList(tab); scheduleSave(); } return; }
             const snimg=e.target.closest('.sn-cell img');
@@ -836,7 +865,7 @@
         list.addEventListener('change', async e=>{
             const input=e.target; if(input.type!=='file') return;
             const card=input.closest('.store-card'); const s=findStore(tab, +card.dataset.id);
-            // 势能补码陈列墙：＋号多选追加（≤5张）
+            // 多点陈列陈列墙：＋号多选追加（≤5张）
             if(input.closest('.sn-add')){
                 const files=Array.from(input.files).filter(f=>f.type.startsWith('image/'));
                 input.value='';
@@ -889,6 +918,16 @@
             if(k % 10 === 9) await new Promise(r=>setTimeout(r, 0));
         }
         if(!photos.length){ toast('处理失败','err'); return; }
+        // 大日期：每1张 = 1家单据，逐张建新店
+        if(tab==='zhuti'){
+            for(const p of photos){
+                const store={ id:mdUid++, store:'', door:null, second:p, photos:[] };
+                mdData[tab].push(store); appendCard(tab,store);
+            }
+            updateCount(tab); scheduleSave();
+            toast(`✅ 追加${photos.length}张 → ${photos.length}家大日期门店（每张=1家单据）`,'ok');
+            return;
+        }
         let startIdx=0;
         for(let i=mdData[tab].length-1;i>=0;i--){ const s=mdData[tab][i];
             if(s.door||s.second||(s.store&&s.store.trim())){ startIdx=i+1; break; }
@@ -912,7 +951,7 @@
     document.addEventListener('change', async e=>{
         const inp=e.target.closest('.batch-all input'); if(!inp) return;
         const pid=inp.closest('.panel').id;
-        const tab=pid==='zhuti-panel'?'zhuti':'hezhuang';
+        const tab=pid.replace('-panel','');
         const files=Array.from(inp.files).filter(f=>f.type.startsWith('image/'));
         inp.value='';
         if(!files.length){ toast('没选中图片','err'); return; }
@@ -922,12 +961,10 @@
     nameInput.addEventListener('input', scheduleSave);
 
     md$('#mdResetBtn').addEventListener('click', ()=>{
-        if(!confirm('确定全部清空？主题堆/盒装陈列/势能补码所有门店和照片都删除，不可恢复。')) return;
-        mdData.zhuti=[]; mdData.hezhuang=[]; mdData.shineng=[]; nameInput.value=''; idbPut(null);
-        document.getElementById('zhuti-list').innerHTML='';
-        document.getElementById('hezhuang-list').innerHTML='';
-        document.getElementById('shineng-list').innerHTML='';
-        updateCount('zhuti'); updateCount('hezhuang'); updateCount('shineng');
+        if(!confirm('确定全部清空？大日期/盒装陈列/多点陈列/新老网点所有门店和照片都删除，不可恢复。')) return;
+        ALL_TABS.forEach(t=>{ mdData[t]=[]; document.getElementById(t+'-list').innerHTML=''; });
+        nameInput.value=''; idbPut(null);
+        ALL_TABS.forEach(t=>updateCount(t));
         if(curTab!=='zhuti') switchTab('zhuti');
         toast('已清空','ok');
     });
@@ -936,13 +973,15 @@
         const issues=[];
         tabs.forEach(tab=>{
             mdData[tab].forEach((s,i)=>{ const lack=[];
-                if(tab==='shineng'){
+                if(tab==='zhuti'){
+                    if(!s.store.trim()) lack.push('门店名'); if(!s.second) lack.push('单据照');
+                }else if(tab==='shineng'){
                     if(!s.store.trim()) lack.push('门店名'); if(!s.door) lack.push('门头');
                     if(!Array.isArray(s.photos) || !s.photos.length) lack.push('陈列照(至少1张)');
                 }else{
                     if(!s.store.trim()) lack.push('门店名'); if(!s.door) lack.push('门头'); if(!s.second) lack.push(SECOND_LABEL[tab]);
                 }
-                if(lack.length) issues.push(`【${tab==='shineng'?'势能补码':SECOND_LABEL[tab]}】第${i+1}家 缺：${lack.join('、')}`);
+                if(lack.length) issues.push(`【${TAB_NAME[tab]}】第${i+1}家 缺：${lack.join('、')}`);
             });
         });
         return issues;
@@ -959,7 +998,8 @@
     md$('#exp-zhuti').addEventListener('click', ()=> doExport(['zhuti']));
     md$('#exp-hezhuang').addEventListener('click', ()=> doExport(['hezhuang']));
     md$('#exp-shineng').addEventListener('click', ()=> doExport(['shineng']));
-    md$('#exp-all').addEventListener('click', ()=> doExport(['zhuti','hezhuang','shineng']));
+    md$('#exp-xindaan').addEventListener('click', ()=> doExport(['xindaan']));
+    md$('#exp-all').addEventListener('click', ()=> doExport(['zhuti','hezhuang','shineng','xindaan']));
 
     async function doExport(tabs){
         closeExp();
@@ -974,9 +1014,11 @@
         try{
             const items=[];
             tabs.forEach(tab=>{
-                const folderKey = tab==='zhuti'?'zt':(tab==='hezhuang'?'hz':'sn');
+                const folderKey = tab==='zhuti'?'zt':(tab==='hezhuang'?'hz':(tab==='xindaan'?'xd':'sn'));
                 mdData[tab].forEach((s,i)=>{ const seq=String(i+1).padStart(2,'0'), sn=clean(s.store)||('门店'+seq);
-                    if(tab==='shineng'){
+                    if(tab==='zhuti'){
+                        items.push([folderKey,`${seq}${sn}单据`,s.second]);
+                    }else if(tab==='shineng'){
                         items.push([folderKey,`${seq}${sn}门头`,s.door]);
                         (Array.isArray(s.photos)?s.photos:[]).forEach((p,k2)=>items.push([folderKey,`${seq}${sn}陈列${k2+1}`,p]));
                     }else{
@@ -985,7 +1027,7 @@
                 });
             });
             const zip=new JSZip();
-            const folders={ zt:zip.folder('主题堆陈列'), hz:zip.folder('盒装陈列'), sn:zip.folder('势能补码') };
+            const folders={ zt:zip.folder('大日期'), hz:zip.folder('盒装陈列'), sn:zip.folder('多点陈列'), xd:zip.folder('新老网点') };
             for(let k=0;k<items.length;k++){
                 const [folder,base,photo]=items[k];
                 if(!photo) continue;
@@ -993,8 +1035,8 @@
                 exportBtn.textContent=`📦 ${Math.round((k+1)/items.length*100)}%`;
             }
             const out=await zip.generateAsync({type:'blob'});
-            const TAGS={ zhuti:'+主题堆', hezhuang:'+盒装陈列', shineng:'+势能补码' };
-            const tag = tabs.length===3 ? '' : TAGS[tabs[0]];
+            const TAGS={ zhuti:'+大日期', hezhuang:'+盒装陈列', shineng:'+多点陈列', xindaan:'+新老网点' };
+            const tag = tabs.length===4 ? '' : TAGS[tabs[0]];
             const zipName=`${name}+${fmtDate(dateInput.value)}${tag}.zip`;
             if (typeof saveAs==='function'){ saveAs(out, zipName); }
             else { const a=document.createElement('a'); a.href=URL.createObjectURL(out); a.download=zipName; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
@@ -1008,7 +1050,7 @@
     function db(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('mendianzip4',2); r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); if(!d.objectStoreNames.contains('libPhotos')) d.createObjectStore('libPhotos',{keyPath:'id'}); if(!d.objectStoreNames.contains('libBatches')) d.createObjectStore('libBatches',{keyPath:'id'}); }; r.onsuccess=()=>{_db=r.result;res(_db);}; r.onerror=()=>rej(r.error); }); }
     async function idbPut(v){ try{ const d=await db(); await new Promise((res,rej)=>{const t=d.transaction('kv','readwrite'); t.objectStore('kv').put(v,'cur'); t.oncomplete=res; t.onerror=()=>rej(t.error);}); }catch(e){} }
     async function idbGet(){ try{ const d=await db(); return await new Promise(res=>{const t=d.transaction('kv','readonly'); const q=t.objectStore('kv').get('cur'); q.onsuccess=()=>res(q.result); q.onerror=()=>res(null);}); }catch(e){ return null; } }
-    function serialize(){ return { name:nameInput.value, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang, shineng:mdData.shineng }; }
+    function serialize(){ return { name:nameInput.value, zhuti:mdData.zhuti, hezhuang:mdData.hezhuang, shineng:mdData.shineng, xindaan:mdData.xindaan }; }
     let saveTimer; let saving=false;
     function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(doSave,800); }
     async function doSave(){ if(saving){ scheduleSave(); return; } saving=true; try{ await idbPut(serialize()); }catch(e){} finally{ saving=false; } }
@@ -1343,18 +1385,22 @@
     })();
 
     // 送整理（三步：分类 → 门店 → 门头/陈列）+ 自动标记已用
-    const TAB_NAMES={ zhuti:'主题堆', hezhuang:'盒装陈列', shineng:'势能补码' };
+    const TAB_NAMES=TAB_NAME;
     md$('#libSendBtn').addEventListener('click', ()=>{
         if(!libSel.size) return;
         const tsel=md$('#libTabSel'), ssel=md$('#libStoreSel');
         tsel.value='zhuti';
-        md$('#libSlotSel').value='door';
         const fill=()=>{
             const tab=tsel.value;
             const stores=mdData[tab].filter(s=>s.store && s.store.trim());
             ssel.innerHTML = stores.length
                 ? stores.map(s=>`<option value="${s.id}">${esc(s.store.trim())}</option>`).join('')
                 : `<option value="">（${TAB_NAMES[tab]}还没有填名字的门店，先去整理起名）</option>`;
+            // 大日期：没有门头槽，只送单据
+            const slotSel=md$('#libSlotSel');
+            slotSel.options[0].disabled = tab==='zhuti';
+            slotSel.options[1].textContent = tab==='zhuti' ? '单据（1张）' : '陈列';
+            slotSel.value = tab==='zhuti' ? 'shelf' : 'door';
         };
         fill();
         tsel.onchange=fill;
@@ -1372,8 +1418,9 @@
             .sort((a,b)=>String(a.at).localeCompare(String(b.at)));
         if(!ps.length) return;
         const storeName=s.store.trim();
-        // 门头：只能1张
+        // 门头：只能1张（大日期没有门头槽）
         if(slot==='door'){
+            if(tab==='zhuti'){ toast('大日期只收1张单据照，请选「单据」','err'); return; }
             if(ps.length>1){ toast('门头只能放1张，请只勾1张','err'); return; }
             if(s.door && !confirm(`「${storeName}」已有门头照，用这张覆盖？`)) return;
             const p=ps[0];
@@ -1405,7 +1452,7 @@
             switchMainTab('md'); if(curTab!==tab) switchTab(tab);
             return;
         }
-        // 主题堆/盒装：陈列1格
+        // 大日期/盒装/新老网点：陈列1格（大日期=单据照）
         if(ps.length>1){ toast(`${SECOND_LABEL[tab]}陈列只能放1张，请只勾1张`,'err'); return; }
         if(s.second && !confirm(`「${storeName}」已有${SECOND_LABEL[tab]}照，用这张覆盖？`)) return;
         const p=ps[0];
@@ -1445,9 +1492,10 @@
             mdData.zhuti=(m.zhuti||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
             mdData.shineng=(m.shineng||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[], photos:Array.isArray(x.photos)?x.photos:[] }));
             mdData.hezhuang=(m.hezhuang||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
-            mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), 0)+1;
+            mdData.xindaan=(m.xindaan||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
+            mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), ...mdData.xindaan.map(x=>x.id), 0)+1;
             nameInput.value=m.name||'';
-            renderList('zhuti'); renderList('hezhuang'); renderList('shineng');
+            renderList('zhuti'); renderList('hezhuang'); renderList('shineng'); renderList('xindaan');
             await idbPut(serialize());
             if(data.lib && Array.isArray(data.lib.photos)){
                 await libDelMany('libPhotos', libPhotos.map(p=>p.id));
@@ -1930,7 +1978,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             const parts=[];
             smTypeVals.forEach(tab=>{
                 deliverPhotos(tab, store, p1 || null, p2 || null);
-                parts.push(`${tab==='shineng'?'势能补码':SECOND_LABEL[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`);
+                parts.push(`${TAB_NAME[tab]}（${mdData[tab].length}/${GOALS[tab]}家）`);
             });
             pushAddrHist(addr);
             lastMeta = { time, date };
@@ -1952,9 +2000,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
     // 照片流入整理：第1张=门头 第2张=陈列；单张(门头)优先补已有同名门店的空门头槽
     function deliverPhotos(tab, storeName, door, second){
         const cn = clean(storeName);
-        // 单张门头照：先在三个分类里找同名且缺门头的已有门店补槽
+        // 单张门头照：先在有门头槽的分类里找同名且缺门头的已有门店补槽（大日期没有门头槽，跳过）
         if(!second && door){
-            for(const t of ['zhuti','hezhuang','shineng']){
+            for(const t of ['hezhuang','shineng','xindaan']){
                 const s = mdData[t].find(x=>clean(x.store)===cn && !x.door);
                 if(s){ s.door=door; renderList(t); updateCount(t); scheduleSave(); return 'filled-existing'; }
             }
@@ -1963,9 +2011,9 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         let created=false;
         if(!s){ s={ id:mdUid++, store:storeName, door:null, second:null, photos:[] }; mdData[tab].push(s); created=true; }
         let dropped = 0, snFull = false;
-        if(door){ if(!s.door) s.door=door; else dropped++; }
+        if(door && tab!=='zhuti'){ if(!s.door) s.door=door; else dropped++; }
         if(second){
-            // 势能补码：陈列照进照片墙（1~5张），不占 second 单格
+            // 多点陈列：陈列照进照片墙（1~5张），不占 second 单格
             if(tab==='shineng'){
                 if(!Array.isArray(s.photos)) s.photos=[];
                 if(s.photos.length<5) s.photos.push(second);
@@ -2038,7 +2086,7 @@ function drawLogoText(ctx, canvas, effectiveScale) {
             const cnt=arr=>(arr||[]).filter(s=>(s.store&&s.store.trim())||s.door||s.second).length;
             const nz=cnt(r.zhuti), nh=cnt(r.hezhuang);
             if(!nz && !nh){ localStorage.setItem('lczp_migrated','1'); return; }
-            if(!confirm('检测到水印工具页的旧数据：主题堆 '+nz+' 家、盒装 '+nh+' 家。\n\n并入本页？（lcsp 页面即将下线，数据合并到这统一管理）')){ localStorage.setItem('lczp_migrated','1'); return; }
+            if(!confirm('检测到水印工具页的旧数据：大日期 '+nz+' 家、盒装 '+nh+' 家。\n\n并入本页？（lcsp 页面即将下线，数据合并到这统一管理）')){ localStorage.setItem('lczp_migrated','1'); return; }
             ['zhuti','hezhuang'].forEach(tab=>{
                 (r[tab]||[]).forEach(s=>{
                     if(!(s.store&&s.store.trim()) && !s.door && !s.second) return;
@@ -2055,20 +2103,22 @@ function drawLogoText(ctx, canvas, effectiveScale) {
         }catch(e){}
     }, 1800);
 
-    // 初始化（v1.7：不再预建空白门店，用户自己点＋添加）
+    // 初始化（v1.7：不再预建空白门店，用户自己点＋添加；v1.8.1：四个分类）
     (function initNow(){
         setToday();
-        renderList('zhuti'); renderList('hezhuang'); renderList('shineng');
+        ALL_TABS.forEach(t=>renderList(t));
     })();
     (async ()=>{
         try{
             const saved=await idbGet();
-            if(saved && ((saved.zhuti&&saved.zhuti.length)||(saved.hezhuang&&saved.hezhuang.length)||(saved.shineng&&saved.shineng.length))){
-                mdData.zhuti=saved.zhuti||[]; mdData.hezhuang=saved.hezhuang||[];
+            if(saved && ((saved.zhuti&&saved.zhuti.length)||(saved.hezhuang&&saved.hezhuang.length)||(saved.shineng&&saved.shineng.length)||(saved.xindaan&&saved.xindaan.length))){
+                mdData.zhuti=(saved.zhuti||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
+                mdData.hezhuang=saved.hezhuang||[];
                 mdData.shineng=(saved.shineng||[]).map(x=>({...x, photos:Array.isArray(x.photos)?x.photos:[]}));
+                mdData.xindaan=(saved.xindaan||[]).map(x=>({ ...x, materials:Array.isArray(x.materials)?x.materials:[] }));
                 nameInput.value=saved.name||'';
-                mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), 0)+1;
-                renderList('zhuti'); renderList('hezhuang'); renderList('shineng');
+                mdUid=Math.max(mdUid, ...mdData.zhuti.map(x=>x.id), ...mdData.hezhuang.map(x=>x.id), ...mdData.shineng.map(x=>x.id), ...mdData.xindaan.map(x=>x.id), 0)+1;
+                ALL_TABS.forEach(t=>renderList(t));
             }
         }catch(e){}
     })();
